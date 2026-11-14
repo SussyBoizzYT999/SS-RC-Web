@@ -129,26 +129,26 @@
                         <span>1st Order: ₹0 Fee!</span>
                     </span>
                 </div>
-                <p id="welcome-greeting-text" class="text-xs text-gray-300 leading-relaxed">
-                    Welcome! We truly appreciate your trust and support. All payments are done strictly offline at school.
+                <p class="text-xs text-gray-300 leading-relaxed">
+                    Enter your amount or select items below. All payments are done strictly offline at school.
                 </p>
             </div>
 
-            <!-- Trust Letter / Active Timer Banner (Appears when order cash is received) -->
+            <!-- Trust Timer Banner (Appears when cash is received) -->
             <div id="trust-timer-banner" class="hidden p-4 rounded-2xl bg-cyber-card border border-cyber-green/50 space-y-3 shadow-lg animate-fadeIn">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-mono text-cyber-green font-bold uppercase flex items-center space-x-1.5">
                         <i data-lucide="shield-check" class="w-4 h-4"></i>
-                        <span>Trust Letter & Guarantee Active</span>
+                        <span id="trust-timer-title">Trust Timer Active</span>
                     </span>
                     <span id="trust-countdown" class="text-xs font-mono font-extrabold text-cyber-cyan">24:00:00</span>
                 </div>
                 <p class="text-[11px] text-gray-300 leading-relaxed">
-                    Cash received confirmed by admin! Your redeem code will be delivered to your Notifications inbox within <strong class="text-white">24 hours</strong> guaranteed.
+                    Your cash payment has been safely verified and received! We truly appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.
                 </p>
             </div>
 
-            <!-- Quick Amount Input Box (10 to 5000) -->
+            <!-- Custom Amount Entry Box -->
             <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-mono text-cyber-cyan uppercase tracking-wider font-semibold">Custom Amount Entry</span>
@@ -162,7 +162,6 @@
                     </div>
                 </div>
 
-                <!-- Total Calculation Display -->
                 <div class="space-y-1.5 pt-3 border-t border-cyber-border">
                     <div class="flex items-center justify-between text-xs font-mono text-gray-400">
                         <span>Code Value:</span>
@@ -190,7 +189,7 @@
                 </div>
             </div>
 
-            <!-- Quick Item Packages -->
+            <!-- Popular Packages -->
             <div class="space-y-3">
                 <h3 class="text-xs font-mono text-gray-400 uppercase tracking-widest px-1">Popular School Packages</h3>
                 <div id="popular-packages-container" class="grid grid-cols-1 gap-3"></div>
@@ -266,7 +265,7 @@
             </button>
         </div>
 
-        <!-- INFO / EXTRA PAGES VIEW -->
+        <!-- INFO VIEW -->
         <div id="view-info" class="hidden space-y-5 animate-fadeIn">
             <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
                 <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -289,7 +288,7 @@
         S S | R C School Offline Hub • Secure School Transactions Only
     </footer>
 
-    <!-- ================= POPUP NOTICE MODAL (Shows only once per user) ================= -->
+    <!-- POPUP NOTICE MODAL -->
     <div id="popup-notice-modal" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl animate-fadeIn">
             <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -301,20 +300,17 @@
                     <i data-lucide="x" class="w-4 h-4"></i>
                 </button>
             </div>
-            <div id="popup-notice-content" class="text-xs text-gray-300 space-y-2 leading-relaxed">
-                Loading latest announcements...
-            </div>
+            <div id="popup-notice-content" class="text-xs text-gray-300 space-y-2 leading-relaxed"></div>
             <button onclick="closePopupNotice()" class="w-full py-2.5 rounded-xl bg-cyber-cyan text-gray-950 font-bold text-xs hover:opacity-90 active:scale-95 transition-all">
                 Got It & Close
             </button>
         </div>
     </div>
 
-    <!-- ================= SLIDE-OVER NAVIGATION DRAWER ================= -->
+    <!-- NAVIGATION DRAWER -->
     <div id="nav-drawer" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex">
         <div class="w-72 max-w-[82vw] bg-cyber-card border-r border-cyber-border h-full flex flex-col justify-between p-5 shadow-2xl animate-fadeIn">
             <div class="space-y-6">
-                <!-- Drawer Header -->
                 <div class="flex items-center justify-between border-b border-cyber-border pb-4">
                     <div>
                         <span class="text-base font-black tracking-wider text-cyber-cyan">S S <span class="text-cyber-pink font-light">|</span> <span class="text-cyber-purple">R C</span></span>
@@ -325,7 +321,6 @@
                     </button>
                 </div>
 
-                <!-- PRIMARY DIVISION: HOME, NOTIFICATIONS & TRACK ORDER -->
                 <div class="space-y-2">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-cyber-cyan px-2">Main Portal</p>
                     <div class="p-2 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-1">
@@ -347,7 +342,6 @@
                     </div>
                 </div>
 
-                <!-- NOTICES SECTION IN MENU -->
                 <div class="space-y-2">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-cyber-yellow px-2">Active School Notices</p>
                     <div id="drawer-notices-container" class="p-2.5 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-2 max-h-36 overflow-y-auto">
@@ -355,7 +349,6 @@
                     </div>
                 </div>
 
-                <!-- SECONDARY DIVISION: EXTRA / GENERAL INFO -->
                 <div class="space-y-2 pt-2 border-t border-cyber-border/70">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-gray-500 px-2">More & Policies</p>
                     <div class="p-2 rounded-2xl bg-cyber-bg/40 border border-cyber-border/60 space-y-1">
@@ -386,7 +379,7 @@
         <div class="flex-1" onclick="closeNavMenu()"></div>
     </div>
 
-    <!-- ================= CART / LIST DRAWER ================= -->
+    <!-- CART DRAWER -->
     <div id="cart-drawer" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex flex-col justify-end">
         <div class="bg-cyber-card border-t border-cyber-border rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeIn">
             <div class="p-4 border-b border-cyber-border flex items-center justify-between">
@@ -447,15 +440,16 @@
         </div>
     </div>
 
-    <!-- ================= RECEIPT / SUCCESS MODAL ================= -->
+    <!-- RECEIPT MODAL -->
     <div id="receipt-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl animate-fadeIn">
             <div class="text-center space-y-1">
                 <div class="w-10 h-10 rounded-full bg-cyber-cyan/20 border border-cyber-cyan mx-auto flex items-center justify-center text-cyber-cyan">
                     <i data-lucide="check" class="w-5 h-5"></i>
                 </div>
-                <h3 class="text-base font-bold text-white">Order Request Sent!</h3>
-                <p class="text-[11px] text-gray-300 leading-relaxed">Bring cash to school. Within 24 hours after cash payment is confirmed, you will receive your redeem code in your <span class="text-cyber-cyan font-bold">Notifications inbox</span>.</p>
+                <h3 class="text-base font-bold text-white">Thank you for choosing SSRC!</h3>
+                <p class="text-[11px] text-gray-300 leading-relaxed">SSRC - SSRC redeem code, your trusted redeem code partner.<br><br>Hello! Thank you for purchasing from SSRC. We truly appreciate your trust and support.</p>
+                <p class="text-[10px] text-gray-500 text-left pt-1">Thank you</p>
             </div>
 
             <div id="receipt-details" class="p-3 rounded-xl bg-cyber-bg border border-cyber-border space-y-2 font-mono text-[11px] text-gray-300"></div>
@@ -502,9 +496,7 @@
             try { getAnalytics(app); } catch (e) {}
             auth = getAuth(app);
             db = getFirestore(app);
-        } catch (err) {
-            console.error("Firebase init error:", err);
-        }
+        } catch (err) {}
 
         let cartList = [];
         let lastGeneratedCode = "";
@@ -513,26 +505,14 @@
         let myNotifications = JSON.parse(localStorage.getItem('ss_rc_my_notifications') || '[]');
 
         let dynamicFeeTiers = {
-            tier10_99: 0,
-            tier100_199: 10,
-            tier200_299: 16,
-            tier300_399: 20,
-            tier400_499: 26,
-            tier500_599: 30,
-            tier600_699: 36,
-            tier700_799: 40,
-            tier800_899: 46,
-            tier900_999: 50,
-            tier1000_1999: 160,
-            tier2000_2999: 300,
-            tier3000_3999: 600,
-            tier4000_5000: 900
+            tier10_99: 0, tier100_199: 10, tier200_299: 16, tier300_399: 20,
+            tier400_499: 26, tier500_599: 30, tier600_699: 36, tier700_799: 40,
+            tier800_899: 46, tier900_999: 50, tier1000_1999: 160, tier2000_2999: 300,
+            tier3000_3999: 600, tier4000_5000: 900
         };
 
         const cachedFees = localStorage.getItem('ss_rc_dynamic_fees');
-        if (cachedFees) {
-            try { dynamicFeeTiers = { ...dynamicFeeTiers, ...JSON.parse(cachedFees) }; } catch (e) {}
-        }
+        if (cachedFees) { try { dynamicFeeTiers = { ...dynamicFeeTiers, ...JSON.parse(cachedFees) }; } catch (e) {} }
 
         async function subscribeToDynamicFees() {
             if (!auth || !db) return;
@@ -550,20 +530,17 @@
             } catch (err) {}
         }
 
-        // Real-time synchronization for Notices and Notifications/Messages
         async function subscribeToLiveUpdates() {
             if (!auth || !db) return;
             try {
                 await signInAnonymously(auth);
 
-                // 1. Listen to Notices
                 const noticesRef = collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolNotices');
                 onSnapshot(noticesRef, (snapshot) => {
                     const now = Date.now();
                     const activeNotices = [];
                     snapshot.forEach(docSnap => {
                         const data = docSnap.data();
-                        // Filter notices active within 24 hours (86400000 ms)
                         if (now - (data.createdAt || 0) < 86400000) {
                             activeNotices.push({ id: docSnap.id, ...data });
                         }
@@ -573,15 +550,12 @@
                     checkAndShowPopupNotice(activeNotices);
                 });
 
-                // 2. Listen to Orders to trigger Notifications and Trust Timers
                 const ordersRef = collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolOrders');
                 onSnapshot(ordersRef, (snapshot) => {
                     snapshot.forEach(docSnap => {
                         const data = docSnap.data();
                         if (myLocalOrderIds.includes(data.orderId)) {
                             myLocalOrdersMap[data.orderId] = { ...(myLocalOrdersMap[data.orderId] || {}), ...data };
-                            
-                            // Check if admin accepted or sent redeem code
                             handleOrderStateChanges(data);
                         }
                     });
@@ -595,33 +569,51 @@
             const status = (order.status || '').toLowerCase();
             const orderId = order.orderId;
 
-            // Check if acceptance notification was already added
+            // 1. Request Accepted & Cash Request notification
             const acceptedKey = `notif_accepted_${orderId}`;
             if ((status.includes('accept') || status.includes('approv') || status.includes('complet')) && !localStorage.getItem(acceptedKey)) {
                 addNotification({
                     id: `accepted_${orderId}_${Date.now()}`,
-                    title: `Order ${orderId} Accepted!`,
-                    message: `Hello! Your order request has been accepted by the admin. Please bring the cash first to school to complete your purchase.`,
+                    title: `Request Accepted - ${orderId}`,
+                    message: `Your request has been accepted! Please bring the cash first to school.`,
                     seen: false,
                     createdAt: Date.now()
                 });
                 localStorage.setItem(acceptedKey, 'true');
             }
 
-            // Check if admin sent a redeem code upon cash received
-            if (order.redeemCode && !localStorage.getItem(`notif_code_${orderId}`)) {
+            // 2. Cash Received triggered by admin -> Start Trust Timer & notify user
+            const cashKey = `notif_cash_${orderId}`;
+            if (order.cashReceivedAt && !localStorage.getItem(cashKey)) {
+                addNotification({
+                    id: `cash_${orderId}_${Date.now()}`,
+                    title: `Cash Received Confirmed - ${orderId}`,
+                    message: `Your cash payment has been safely received! Trust timer of 24 hours has started. We truly appreciate your trust and support.`,
+                    seen: false,
+                    createdAt: Date.now()
+                });
+                localStorage.setItem(cashKey, 'true');
+                
+                // Save trust timer start time for this order
+                localStorage.setItem(`ss_rc_trust_start_${orderId}`, order.cashReceivedAt);
+                activateTrustTimerBanner(order.cashReceivedAt);
+            }
+
+            // 3. Redeem code sent by admin -> Pause/Complete timer & notify user with code
+            const codeKey = `notif_code_${orderId}`;
+            if (order.redeemCode && !localStorage.getItem(codeKey)) {
                 addNotification({
                     id: `code_${orderId}_${Date.now()}`,
-                    title: `Redeem Code Ready - ${orderId}`,
-                    message: `Cash received confirmed! Your redeem code is: ${order.redeemCode}`,
+                    title: `Redeem Code Dispatched - ${orderId}`,
+                    message: `Your redeem code is ready: ${order.redeemCode}`,
                     code: order.redeemCode,
                     seen: false,
                     createdAt: Date.now()
                 });
-                localStorage.setItem(`notif_code_${orderId}`, 'true');
+                localStorage.setItem(codeKey, 'true');
                 
-                // Show Trust Timer Banner on Home
-                activateTrustTimerBanner();
+                // Pause/Complete trust timer banner
+                completeTrustTimerBanner();
             }
         }
 
@@ -659,7 +651,7 @@
             if (!container) return;
 
             if (myNotifications.length === 0) {
-                container.innerHTML = `<div class="text-center py-6 text-gray-500 text-xs font-mono">No notifications or messages yet.</div>`;
+                container.innerHTML = `<div class="text-center py-6 text-gray-500 text-xs font-mono">No notifications yet.</div>`;
                 return;
             }
 
@@ -690,7 +682,7 @@
                 }
 
                 return `
-                    <div onclick="markSingleSeen(${idx})" class="p-3.5 rounded-xl bg-cyber-bg border ${!n.seen ? 'border-cyber-cyan/60 bg-cyber-cyan/5' : 'border-cyber-border'} space-y-1.5 transition-all">
+                    <div onclick="markSingleSeen(${idx})" class="p-3.5 rounded-xl bg-cyber-bg border ${!n.seen ? 'border-cyber-cyan/60 bg-cyber-cyan/5' : 'border-cyber-border'} space-y-1.5 transition-all cursor-pointer">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
                                 ${unreadDot}
@@ -716,7 +708,6 @@
             }
         };
 
-        // Long press (1.5s) copy for redeem codes
         let codeHoldTimer = null;
         window.startCodeHold = function(event, code, el) {
             event.stopPropagation();
@@ -734,7 +725,6 @@
             if (el) el.classList.remove('holding-id');
         };
 
-        // Pop-up Notice handling (shows only once per user session/device)
         function checkAndShowPopupNotice(notices) {
             if (!notices || notices.length === 0) return;
             const latest = notices[0];
@@ -757,8 +747,6 @@
             const modal = document.getElementById('popup-notice-modal');
             if (modal) {
                 modal.classList.add('hidden');
-                // Mark latest popup as seen so it doesn't show again
-                // We store a generic flag or specific notice id
                 localStorage.setItem('ss_rc_popup_seen_global', 'true');
             }
         };
@@ -789,22 +777,20 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        // Trust Timer 24 hours countdown
-        function activateTrustTimerBanner() {
+        let trustTimerInterval = null;
+        function activateTrustTimerBanner(startTime) {
             const banner = document.getElementById('trust-timer-banner');
             if (banner) banner.classList.remove('hidden');
-            
-            // Start 24 hour timer display
-            let endTime = localStorage.getItem('ss_rc_trust_end_time');
-            if (!endTime) {
-                endTime = Date.now() + 24 * 60 * 60 * 1000;
-                localStorage.setItem('ss_rc_trust_end_time', endTime);
-            }
 
-            setInterval(() => {
+            const endTime = Number(startTime) + 24 * 60 * 60 * 1000;
+
+            if (trustTimerInterval) clearInterval(trustTimerInterval);
+
+            trustTimerInterval = setInterval(() => {
                 const diff = endTime - Date.now();
                 if (diff <= 0) {
                     document.getElementById('trust-countdown').textContent = "00:00:00";
+                    clearInterval(trustTimerInterval);
                     return;
                 }
                 const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
@@ -815,9 +801,14 @@
             }, 1000);
         }
 
-        function isFirstTimeUser() {
-            return myLocalOrderIds.length === 0;
+        function completeTrustTimerBanner() {
+            if (trustTimerInterval) clearInterval(trustTimerInterval);
+            const titleEl = document.getElementById('trust-timer-title');
+            if (titleEl) titleEl.textContent = "Trust Timer Completed & Paused";
+            document.getElementById('trust-countdown').textContent = "00:00:00";
         }
+
+        function isFirstTimeUser() { return myLocalOrderIds.length === 0; }
 
         function calculateExtraFee(val) {
             if (val >= 10 && val <= 99) return Number(dynamicFeeTiers.tier10_99 ?? 0);
@@ -846,7 +837,6 @@
                 if (firstTime) badgeEl.classList.remove('hidden');
                 else badgeEl.classList.add('hidden');
             }
-
             if (!container) return;
 
             const packages = [
@@ -1007,11 +997,11 @@
             const contentMap = {
                 about: {
                     title: 'About S S | R C',
-                    html: `<p><strong class="text-white">S S | R C School Hub</strong> is built exclusively for classmates to request redeem codes, study notes, and school kits offline.</p>`
+                    html: `<p><strong class="text-white">S S | R C School Hub</strong> is built exclusively for classmates to request redeem codes offline.</p>`
                 },
                 terms: {
                     title: 'Terms & Conditions',
-                    html: `<p>• All orders are strictly <strong class="text-cyber-cyan">cash-at-school only</strong>.</p><p>• Redeem codes are delivered to your notifications inbox within 24 hours after cash payment confirmation.</p>`
+                    html: `<p>• All orders are strictly <strong class="text-cyber-cyan">cash-at-school only</strong>.</p><p>• Redeem codes are delivered after cash verification.</p>`
                 },
                 privacy: {
                     title: 'Privacy Policy',
@@ -1071,14 +1061,12 @@
             if (rawStatus.includes('accept') || rawStatus.includes('approv') || rawStatus.includes('complet')) {
                 badgeText = 'ACCEPTED';
                 badgeClasses = 'bg-cyber-green/15 text-cyber-green border-cyber-green/40';
-                statusNote = 'Order accepted! Bring cash to school. Your code will arrive in Notifications within 24 hours of cash confirmation.';
+                statusNote = 'Order accepted! Bring cash to school.';
             } else if (rawStatus.includes('reject') || rawStatus.includes('declin')) {
                 badgeText = 'REJECTED';
                 badgeClasses = 'bg-red-500/15 text-red-400 border-red-500/40';
                 statusNote = 'This order request was rejected.';
             }
-
-            const phoneDisplay = data.whatsappFull || (data.whatsappNumber ? `${data.countryCode || '+91'} ${data.whatsappNumber}` : 'N/A');
 
             containerEl.innerHTML = `
                 <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-cyan/50 space-y-3 shadow-lg animate-fadeIn">
@@ -1143,21 +1131,11 @@
                     statusLabel = 'REJECTED';
                 }
 
-                const timestamp = data.createdAt ? new Date(data.createdAt) : null;
-                const dateTimeHtml = timestamp
-                    ? `<span class="text-[10px] text-gray-400 font-mono flex items-center space-x-2 mt-1">
-                        <span class="inline-flex items-center space-x-1"><i data-lucide="calendar" class="w-3 h-3 text-cyber-cyan"></i><span>${timestamp.toLocaleDateString()}</span></span>
-                        <span class="text-gray-600">|</span>
-                        <span class="inline-flex items-center space-x-1"><i data-lucide="clock" class="w-3 h-3 text-cyber-pink"></i><span>${timestamp.toLocaleTimeString()}</span></span>
-                       </span>`
-                    : '';
-
                 html += `
                     <div onclick="handleOrderCardClick('${id}')" class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan transition-all cursor-pointer flex items-center justify-between text-xs">
                         <div>
                             <span onmousedown="startOrderIdHold(event, '${id}', this)" onmouseup="cancelOrderIdHold(event, this)" class="font-mono font-bold text-cyber-cyan inline-block text-sm py-0.5 px-1 -ml-1 rounded">${id}</span>
                             <span class="text-[11px] text-gray-300 block font-medium">${data.studentName || 'Offline Request'} • ₹${(data.total || 0).toLocaleString()}</span>
-                            ${dateTimeHtml}
                         </div>
                         <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeColor}">${statusLabel}</span>
                     </div>
@@ -1319,7 +1297,6 @@
                 <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Order ID:</span><span class="text-cyber-cyan font-bold">${order.orderId}</span></div>
                 <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Student:</span><span class="text-white">${order.studentName}</span></div>
                 <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Class / Sec / Roll:</span><span class="text-white">${order.studentClass}-${order.section} (Roll: ${order.rollNo})</span></div>
-                <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Redeem Code:</span><span class="text-cyber-pink font-bold">In Notifications within 24h of cash</span></div>
                 <div class="flex justify-between pt-1"><span class="text-gray-400">Cash to Bring:</span><span class="text-cyber-green font-bold">₹${order.total.toLocaleString()}</span></div>
             `;
             modal.classList.remove('hidden');
@@ -1343,6 +1320,19 @@
             subscribeToDynamicFees();
             subscribeToLiveUpdates();
             updateNotificationBadges();
+
+            // Check if trust timer was active for any local order
+            for (let id of myLocalOrderIds) {
+                const startTime = localStorage.getItem(`ss_rc_trust_start_${id}`);
+                const data = myLocalOrdersMap[id];
+                if (startTime && data && !data.redeemCode) {
+                    activateTrustTimerBanner(startTime);
+                    break;
+                } else if (startTime && data && data.redeemCode) {
+                    completeTrustTimerBanner();
+                    break;
+                }
+            }
         }
 
         if (document.readyState === 'loading') {
