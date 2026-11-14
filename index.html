@@ -34,12 +34,36 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
+        /* Disable text selection globally while keeping inputs editable */
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+        }
+        input, textarea, select {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(8px); }
             to { opacity: 1; transform: translateY(0); }
         }
         .animate-fadeIn {
             animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes holdPulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.97); opacity: 0.85; }
+            100% { transform: scale(1); }
+        }
+        .holding-id {
+            animation: holdPulse 0.4s infinite ease-in-out;
+            text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
         }
         ::-webkit-scrollbar {
             width: 6px;
@@ -54,7 +78,7 @@
         }
     </style>
 </head>
-<body class="bg-cyber-bg text-gray-100 font-sans min-h-screen flex flex-col justify-between selection:bg-cyber-cyan selection:text-gray-950">
+<body class="bg-cyber-bg text-gray-100 font-sans min-h-screen flex flex-col justify-between">
 
     <!-- Top Glow Header Bar -->
     <div class="h-1 bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-purple w-full"></div>
@@ -63,7 +87,7 @@
     <header class="sticky top-0 z-40 backdrop-blur-md bg-cyber-bg/90 border-b border-cyber-border px-4 py-3">
         <div class="max-w-md mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <button onclick="openNavMenu()" aria-label="Open Navigation Menu" class="p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-200 hover:text-cyber-cyan hover:border-cyber-cyan transition-all">
+                <button onclick="openNavMenu()" aria-label="Open Navigation Menu" class="p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-200 hover:text-cyber-cyan hover:border-cyber-cyan transition-all active:scale-95">
                     <i data-lucide="menu" class="w-5 h-5"></i>
                 </button>
                 <div>
@@ -77,7 +101,7 @@
             </div>
 
             <div class="flex items-center space-x-2">
-                <button onclick="openCartDrawer()" class="relative p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-cyan transition-all flex items-center space-x-1.5">
+                <button onclick="openCartDrawer()" class="relative p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-cyan transition-all active:scale-95 flex items-center space-x-1.5">
                     <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                     <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-cyber-pink text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
                 </button>
@@ -94,9 +118,13 @@
             <div class="p-5 rounded-2xl bg-gradient-to-br from-cyber-card to-[#1a2135] border border-cyber-border shadow-xl relative overflow-hidden">
                 <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-cyan/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="flex items-center justify-between mb-1">
-                    <h2 class="text-xl font-bold tracking-tight text-white">Hello Classmates! 👋</h2>
-                    <span id="first-time-badge" class="hidden px-2.5 py-0.5 rounded-full bg-cyber-green/15 border border-cyber-green/40 text-cyber-green text-[10px] font-mono font-bold uppercase">
-                        🎉 1st Order: ₹0 Fee!
+                    <h2 class="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+                        <span>Hello Classmates!</span>
+                        <i data-lucide="sparkles" class="w-5 h-5 text-cyber-cyan"></i>
+                    </h2>
+                    <span id="first-time-badge" class="hidden px-2.5 py-0.5 rounded-full bg-cyber-green/15 border border-cyber-green/40 text-cyber-green text-[10px] font-mono font-bold uppercase flex items-center space-x-1">
+                        <i data-lucide="gift" class="w-3 h-3"></i>
+                        <span>1st Order: ₹0 Fee!</span>
                     </span>
                 </div>
                 <p class="text-xs text-gray-300 leading-relaxed">
@@ -114,7 +142,7 @@
                 <div class="space-y-2">
                     <div class="relative">
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono font-bold">₹</span>
-                        <input type="number" id="custom-amount-input" min="10" max="5000" value="100" oninput="handleAmountInput()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl pl-9 pr-4 py-3 text-lg font-mono font-bold text-cyber-cyan focus:outline-none focus:border-cyber-cyan">
+                        <input type="number" id="custom-amount-input" min="10" max="5000" value="100" oninput="handleAmountInput()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl pl-9 pr-4 py-3 text-lg font-mono font-bold text-cyber-cyan focus:outline-none focus:border-cyber-cyan transition-colors">
                     </div>
                 </div>
 
@@ -136,11 +164,11 @@
 
                 <!-- Action Buttons (No online pay, offline school actions) -->
                 <div class="grid grid-cols-2 gap-3 pt-2">
-                    <button onclick="addCustomToCart()" class="py-3 px-3 rounded-xl bg-cyber-card border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan/10 text-xs font-bold transition-all flex items-center justify-center space-x-1.5">
+                    <button onclick="addCustomToCart()" class="py-3 px-3 rounded-xl bg-cyber-card border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan/10 text-xs font-bold transition-all active:scale-95 flex items-center justify-center space-x-1.5">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
                         <span>Add to List</span>
                     </button>
-                    <button onclick="openDirectSchoolCheckout()" class="py-3 px-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-gray-950 font-extrabold text-xs transition-all shadow-md shadow-cyber-cyan/20 flex items-center justify-center space-x-1.5">
+                    <button onclick="openDirectSchoolCheckout()" class="py-3 px-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-gray-950 font-extrabold text-xs transition-all active:scale-95 shadow-md shadow-cyber-cyan/20 flex items-center justify-center space-x-1.5">
                         <i data-lucide="school" class="w-4 h-4"></i>
                         <span>Pay at School</span>
                     </button>
@@ -162,7 +190,7 @@
                 <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-lg font-bold text-white">Track Your Order</h2>
-                        <p class="text-[11px] text-gray-400">Search by Order ID or view your saved requests below</p>
+                        <p class="text-[11px] text-gray-400">Search by Order ID or hold any blue ID for 1.5s to copy</p>
                     </div>
                     <div class="w-9 h-9 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/30 flex items-center justify-center text-cyber-cyan">
                         <i data-lucide="search" class="w-4 h-4"></i>
@@ -170,8 +198,8 @@
                 </div>
 
                 <div class="space-y-3">
-                    <input type="text" id="track-order-input" placeholder="e.g. REQ-9X4K2A" onkeydown="if(event.key==='Enter') trackOrderStatus()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl px-4 py-3 text-sm font-mono uppercase text-cyber-cyan focus:outline-none focus:border-cyber-cyan">
-                    <button onclick="trackOrderStatus()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-gray-950 font-extrabold text-xs shadow-md shadow-cyber-cyan/20 flex items-center justify-center space-x-2">
+                    <input type="text" id="track-order-input" placeholder="e.g. REQ-9X4K2A" onkeydown="if(event.key==='Enter') trackOrderStatus()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl px-4 py-3 text-sm font-mono uppercase text-cyber-cyan focus:outline-none focus:border-cyber-cyan transition-colors">
+                    <button onclick="trackOrderStatus()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-gray-950 font-extrabold text-xs shadow-md shadow-cyber-cyan/20 active:scale-98 transition-all flex items-center justify-center space-x-2">
                         <i data-lucide="radar" class="w-4 h-4"></i>
                         <span>Check Order Status</span>
                     </button>
@@ -186,9 +214,9 @@
                 <div class="flex items-center justify-between border-b border-cyber-border pb-3">
                     <div>
                         <h3 class="text-sm font-bold text-white">All My Requests</h3>
-                        <p class="text-[10px] text-gray-400 font-mono">Permanently saved on this device</p>
+                        <p class="text-[10px] text-gray-400 font-mono">Hold blue Order ID (1.5s) to copy</p>
                     </div>
-                    <button onclick="loadUserRecentOrders()" class="px-3 py-1.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan text-cyber-cyan text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                    <button onclick="loadUserRecentOrders()" class="px-3 py-1.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan text-cyber-cyan text-xs font-semibold flex items-center space-x-1.5 transition-all active:scale-95">
                         <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
                         <span>Refresh</span>
                     </button>
@@ -199,7 +227,7 @@
                 </div>
             </div>
 
-            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5">
+            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all active:scale-98">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                 <span>Back to Home</span>
             </button>
@@ -215,7 +243,7 @@
                 <div id="info-page-body" class="space-y-3 text-xs text-gray-300 leading-relaxed"></div>
             </div>
 
-            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5">
+            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all active:scale-98">
                 <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
                 <span>Back to Home</span>
             </button>
@@ -238,7 +266,7 @@
                         <span class="text-base font-black tracking-wider text-cyber-cyan">S S <span class="text-cyber-pink font-light">|</span> <span class="text-cyber-purple">R C</span></span>
                         <p class="text-[10px] font-mono text-gray-400">NAVIGATION MENU</p>
                     </div>
-                    <button onclick="closeNavMenu()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white">
+                    <button onclick="closeNavMenu()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors">
                         <i data-lucide="x" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -291,18 +319,18 @@
 
     <!-- ================= CART / LIST DRAWER ================= -->
     <div id="cart-drawer" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex flex-col justify-end">
-        <div class="bg-cyber-card border-t border-cyber-border rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl animate-fadeIn">
+        <div class="bg-cyber-card border-t border-cyber-border rounded-t-3xl max-h-[90vh] flex flex-col shadow-2xl animate-fadeIn">
             <div class="p-4 border-b border-cyber-border flex items-center justify-between">
                 <div>
                     <h3 class="text-base font-bold text-white">My Added Items & Total</h3>
                     <p class="text-[10px] font-mono text-gray-400">Book your order now & pay cash at school</p>
                 </div>
-                <button onclick="closeCartDrawer()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white">
+                <button onclick="closeCartDrawer()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white transition-colors">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
-            <div id="cart-items-list" class="p-4 overflow-y-auto space-y-3 flex-1 max-h-48">
+            <div id="cart-items-list" class="p-4 overflow-y-auto space-y-3 flex-1 max-h-40">
                 <!-- Populated via JS -->
             </div>
 
@@ -312,19 +340,42 @@
                     <span id="drawer-total-amount" class="text-xl font-black text-cyber-cyan font-mono">₹0</span>
                 </div>
 
-                <!-- Separate Student Details Inputs with Strict Types & Clean Placeholders -->
+                <!-- Quick Fill Saved Profile Header -->
+                <div id="quick-fill-bar" class="hidden flex items-center justify-between px-3 py-2 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/30 transition-all">
+                    <div class="flex items-center space-x-2">
+                        <i data-lucide="user-check" class="w-4 h-4 text-cyber-cyan"></i>
+                        <span class="text-[11px] font-mono text-gray-200">Saved profile available</span>
+                    </div>
+                    <button type="button" onclick="quickFillStudentDetails()" class="px-3 py-1 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-[11px] hover:opacity-90 active:scale-95 transition-all flex items-center space-x-1 shadow-sm">
+                        <i data-lucide="zap" class="w-3 h-3"></i>
+                        <span>Quick Fill</span>
+                    </button>
+                </div>
+
+                <!-- Separate Student Details Inputs -->
                 <div class="space-y-2">
-                    <input type="text" id="student-name" placeholder="Full Name" oninput="validateNameInput(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white">
+                    <input type="text" id="student-name" placeholder="Full Name" oninput="validateNameInput(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white transition-colors">
+                    
                     <div class="grid grid-cols-3 gap-2">
-                        <input type="number" id="student-class" placeholder="Class" min="1" max="12" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white">
-                        <input type="number" id="student-roll" placeholder="Roll No" min="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white">
-                        <input type="text" id="student-section" placeholder="Section" maxlength="2" oninput="validateSectionInput(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs uppercase focus:outline-none focus:border-cyber-cyan text-white">
+                        <input type="number" id="student-class" placeholder="Class" min="1" max="12" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white transition-colors">
+                        <input type="number" id="student-roll" placeholder="Roll No" min="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white transition-colors">
+                        <input type="text" id="student-section" placeholder="Section" maxlength="2" oninput="validateSectionInput(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs uppercase focus:outline-none focus:border-cyber-cyan text-white transition-colors">
+                    </div>
+
+                    <!-- WhatsApp Phone Number Input with Editable Country Code (+91 default) -->
+                    <div class="flex items-center space-x-2">
+                        <div class="relative w-24 flex-shrink-0">
+                            <input type="text" id="student-country-code" value="+91" maxlength="5" placeholder="+91" oninput="validateCountryCode(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs font-mono font-bold text-cyber-cyan text-center focus:outline-none focus:border-cyber-cyan transition-colors">
+                        </div>
+                        <div class="relative flex-1">
+                            <input type="tel" id="student-whatsapp" placeholder="WhatsApp phone number" maxlength="15" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3.5 py-2.5 text-xs font-mono focus:outline-none focus:border-cyber-cyan text-white transition-colors">
+                        </div>
                     </div>
                 </div>
 
                 <!-- Single Offline Order Confirmation Button -->
                 <div class="pt-1">
-                    <button onclick="confirmSchoolPayment()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-500 text-gray-950 font-extrabold text-xs hover:opacity-90 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-cyber-cyan/20">
+                    <button onclick="confirmSchoolPayment()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-500 text-gray-950 font-extrabold text-xs hover:opacity-90 active:scale-98 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-cyber-cyan/20">
                         <i data-lucide="school" class="w-4 h-4"></i>
                         <span>Confirm Order (Pay Cash at School)</span>
                     </button>
@@ -335,7 +386,7 @@
 
     <!-- ================= RECEIPT / SUCCESS MODAL ================= -->
     <div id="receipt-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
-        <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+        <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl animate-fadeIn">
             <div class="text-center space-y-1">
                 <div class="w-10 h-10 rounded-full bg-cyber-cyan/20 border border-cyber-cyan mx-auto flex items-center justify-center text-cyber-cyan">
                     <i data-lucide="check" class="w-5 h-5"></i>
@@ -349,11 +400,11 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2">
-                <button onclick="copyReceiptCode()" class="py-2.5 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan text-xs font-semibold flex items-center justify-center space-x-1.5">
+                <button onclick="copyReceiptCode()" class="py-2.5 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all active:scale-95">
                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                     <span>Copy Order ID</span>
                 </button>
-                <button onclick="closeReceiptModal()" class="py-2.5 rounded-xl bg-cyber-cyan text-gray-950 font-bold text-xs">Done</button>
+                <button onclick="closeReceiptModal()" class="py-2.5 rounded-xl bg-cyber-cyan text-gray-950 font-bold text-xs transition-all active:scale-95">Done</button>
             </div>
         </div>
     </div>
@@ -369,7 +420,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, addDoc, query, where, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvf7rZzqY38wtelwQzBkJwAMcqd0cf3SM",
@@ -400,23 +451,78 @@
 
         let cartList = [];
         let lastGeneratedCode = "";
-        // Load permanently stored order IDs & full offline order objects so they never vanish when closed/rejoined
         let myLocalOrderIds = JSON.parse(localStorage.getItem('ss_rc_my_permanent_orders') || '[]');
         let myLocalOrdersMap = JSON.parse(localStorage.getItem('ss_rc_my_orders_data') || '{}');
 
-        // Helper: Check if user is a first-time buyer (0 orders placed on this device)
+        // Default fee tiers (synced in real time with admin feeConfig in Firebase)
+        let dynamicFeeTiers = {
+            tier10_99: 0,
+            tier100_199: 10,
+            tier200_299: 16,
+            tier300_399: 20,
+            tier400_499: 26,
+            tier500_599: 30,
+            tier600_699: 36,
+            tier700_799: 40,
+            tier800_899: 46,
+            tier900_999: 50,
+            tier1000_1999: 160,
+            tier2000_2999: 300,
+            tier3000_3999: 600,
+            tier4000_5000: 900
+        };
+
+        // Load cached fee tiers if available
+        const cachedFees = localStorage.getItem('ss_rc_dynamic_fees');
+        if (cachedFees) {
+            try {
+                dynamicFeeTiers = { ...dynamicFeeTiers, ...JSON.parse(cachedFees) };
+            } catch (e) {}
+        }
+
+        // Listen to real-time fee configuration from Admin panel
+        async function subscribeToDynamicFees() {
+            if (!auth || !db) return;
+            try {
+                await signInAnonymously(auth);
+                const feeDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'feeTiers');
+                onSnapshot(feeDocRef, (snap) => {
+                    if (snap.exists()) {
+                        dynamicFeeTiers = { ...dynamicFeeTiers, ...snap.data() };
+                        localStorage.setItem('ss_rc_dynamic_fees', JSON.stringify(dynamicFeeTiers));
+                        renderPopularPackages();
+                        handleAmountInput();
+                    }
+                });
+            } catch (err) {
+                console.warn("Fee sync skipped:", err);
+            }
+        }
+
         function isFirstTimeUser() {
             return myLocalOrderIds.length === 0;
         }
 
-        // Popular school packages definition
-        const POPULAR_PACKAGES = [
-            { codeVal: 150, regularFee: 10, color: 'cyan' },
-            { codeVal: 450, regularFee: 26, color: 'pink' },
-            { codeVal: 500, regularFee: 30, color: 'purple' }
-        ];
+        // Calculate extra service fee based on live admin-configured tiers
+        function calculateExtraFee(val) {
+            if (val >= 10 && val <= 99) return Number(dynamicFeeTiers.tier10_99 ?? 0);
+            if (val >= 100 && val <= 199) return Number(dynamicFeeTiers.tier100_199 ?? 10);
+            if (val >= 200 && val <= 299) return Number(dynamicFeeTiers.tier200_299 ?? 16);
+            if (val >= 300 && val <= 399) return Number(dynamicFeeTiers.tier300_399 ?? 20);
+            if (val >= 400 && val <= 499) return Number(dynamicFeeTiers.tier400_499 ?? 26);
+            if (val >= 500 && val <= 599) return Number(dynamicFeeTiers.tier500_599 ?? 30);
+            if (val >= 600 && val <= 699) return Number(dynamicFeeTiers.tier600_699 ?? 36);
+            if (val >= 700 && val <= 799) return Number(dynamicFeeTiers.tier700_799 ?? 40);
+            if (val >= 800 && val <= 899) return Number(dynamicFeeTiers.tier800_899 ?? 46);
+            if (val >= 900 && val <= 999) return Number(dynamicFeeTiers.tier900_999 ?? 50);
+            if (val >= 1000 && val <= 1999) return Number(dynamicFeeTiers.tier1000_1999 ?? 160);
+            if (val >= 2000 && val <= 2999) return Number(dynamicFeeTiers.tier2000_2999 ?? 300);
+            if (val >= 3000 && val <= 3999) return Number(dynamicFeeTiers.tier3000_3999 ?? 600);
+            if (val >= 4000 && val <= 5000) return Number(dynamicFeeTiers.tier4000_5000 ?? 900);
+            return 0;
+        }
 
-        // Render Popular Packages with strikethrough pricing for first-time users
+        // Render Popular Packages dynamically using live fees
         window.renderPopularPackages = function() {
             const container = document.getElementById('popular-packages-container');
             const badgeEl = document.getElementById('first-time-badge');
@@ -429,7 +535,13 @@
 
             if (!container) return;
 
-            container.innerHTML = POPULAR_PACKAGES.map(pkg => {
+            const packages = [
+                { codeVal: 150, regularFee: calculateExtraFee(150), color: 'cyan' },
+                { codeVal: 450, regularFee: calculateExtraFee(450), color: 'pink' },
+                { codeVal: 500, regularFee: calculateExtraFee(500), color: 'purple' }
+            ];
+
+            container.innerHTML = packages.map(pkg => {
                 const regularTotal = pkg.codeVal + pkg.regularFee;
                 const finalFee = firstTime ? 0 : pkg.regularFee;
                 const finalTotal = pkg.codeVal + finalFee;
@@ -465,12 +577,14 @@
                             <p class="text-[11px] text-gray-400">Code ₹${pkg.codeVal} + ${feeHtml}</p>
                             <span class="text-xs font-mono ${textAccent} font-bold mt-1 inline-block">${payHtml}</span>
                         </div>
-                        <button onclick="addPresetToCart('${itemLabel}', ${finalTotal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all">
+                        <button onclick="addPresetToCart('${itemLabel}', ${finalTotal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all active:scale-95">
                             Add
                         </button>
                     </div>
                 `;
             }).join('');
+
+            if (window.lucide) lucide.createIcons();
         };
 
         // Input validation helpers
@@ -482,7 +596,100 @@
             el.value = el.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
         };
 
-        // Generate guaranteed unique random Order ID per order
+        window.validateCountryCode = function(el) {
+            let clean = el.value.replace(/[^0-9+]/g, '');
+            if (!clean.startsWith('+')) {
+                clean = '+' + clean.replace(/\+/g, '');
+            } else {
+                clean = '+' + clean.slice(1).replace(/\+/g, '');
+            }
+            el.value = clean;
+        };
+
+        // Hold for 1.5s to copy Order ID logic
+        let holdTimer = null;
+        let isHoldTriggered = false;
+
+        window.startOrderIdHold = function(event, orderId, element) {
+            event.stopPropagation();
+            isHoldTriggered = false;
+            element.classList.add('holding-id');
+            clearTimeout(holdTimer);
+
+            holdTimer = setTimeout(() => {
+                isHoldTriggered = true;
+                element.classList.remove('holding-id');
+                copyTextDirectly(orderId);
+                showToast(`Order ID ${orderId} copied!`);
+            }, 1500);
+        };
+
+        window.cancelOrderIdHold = function(event, element) {
+            if (event) event.stopPropagation();
+            clearTimeout(holdTimer);
+            if (element) element.classList.remove('holding-id');
+        };
+
+        window.handleOrderCardClick = function(orderId) {
+            if (isHoldTriggered) {
+                isHoldTriggered = false;
+                return;
+            }
+            document.getElementById('track-order-input').value = orderId;
+            trackOrderStatus();
+        };
+
+        function copyTextDirectly(text) {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).catch(() => fallbackCopyText(text));
+            } else {
+                fallbackCopyText(text);
+            }
+        }
+
+        function fallbackCopyText(text) {
+            const dummy = document.createElement('textarea');
+            document.body.appendChild(dummy);
+            dummy.value = text;
+            dummy.select();
+            document.execCommand('copy');
+            document.body.removeChild(dummy);
+        }
+
+        // Quick Fill Student Profile logic
+        function updateQuickFillBar() {
+            const savedProfile = localStorage.getItem('ss_rc_saved_student_profile');
+            const bar = document.getElementById('quick-fill-bar');
+            if (bar) {
+                if (savedProfile) {
+                    bar.classList.remove('hidden');
+                } else {
+                    bar.classList.add('hidden');
+                }
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        window.quickFillStudentDetails = function() {
+            const raw = localStorage.getItem('ss_rc_saved_student_profile');
+            if (!raw) {
+                showToast("No saved details found yet.");
+                return;
+            }
+            try {
+                const profile = JSON.parse(raw);
+                document.getElementById('student-name').value = profile.studentName || '';
+                document.getElementById('student-class').value = profile.studentClass || '';
+                document.getElementById('student-roll').value = profile.rollNo || '';
+                document.getElementById('student-section').value = profile.section || '';
+                document.getElementById('student-country-code').value = profile.countryCode || '+91';
+                document.getElementById('student-whatsapp').value = profile.whatsappNumber || '';
+                showToast("Details auto-filled from your previous order!");
+            } catch (e) {
+                showToast("Unable to load saved profile.");
+            }
+        };
+
         function generateUniqueOrderId() {
             const timePart = Date.now().toString(36).slice(-4).toUpperCase();
             const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -541,7 +748,7 @@
                 privacy: {
                     title: 'Privacy Policy',
                     html: `
-                        <p>We only collect your <strong class="text-white">Full Name, Class, Roll Number, and Section</strong> so we can identify you at school and hand over the right order.</p>
+                        <p>We only collect your <strong class="text-white">Full Name, Class, Roll Number, Section, and WhatsApp Number</strong> so we can identify you at school and hand over the right order.</p>
                         <p>Your details are never shared outside school or used for any external purpose.</p>
                     `
                 },
@@ -587,7 +794,6 @@
 
                     if (!snapshot.empty) {
                         const data = snapshot.docs[0].data();
-                        // Keep local backup updated with latest status
                         myLocalOrdersMap[orderId] = {
                             ...(myLocalOrdersMap[orderId] || {}),
                             ...data
@@ -598,7 +804,6 @@
                     }
                 }
 
-                // Fallback to locally stored order data if offline or not yet synced
                 if (myLocalOrdersMap[orderId]) {
                     renderOrderStatusCard(myLocalOrdersMap[orderId], resultEl);
                     return;
@@ -641,12 +846,22 @@
                 statusNote = 'This order request was rejected.';
             }
 
+            const phoneDisplay = data.whatsappFull || (data.whatsappNumber ? `${data.countryCode || '+91'} ${data.whatsappNumber}` : 'N/A');
+
             containerEl.innerHTML = `
                 <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-cyan/50 space-y-3 shadow-lg animate-fadeIn">
                     <div class="flex items-center justify-between border-b border-cyber-border pb-3">
                         <div>
-                            <span class="text-[10px] font-mono text-gray-400 block">ORDER ID</span>
-                            <span class="text-sm font-mono font-bold text-cyber-cyan">${data.orderId}</span>
+                            <span class="text-[10px] font-mono text-gray-400 block">ORDER ID (HOLD 1.5S TO COPY)</span>
+                            <span
+                                onmousedown="startOrderIdHold(event, '${data.orderId}', this)"
+                                onmouseup="cancelOrderIdHold(event, this)"
+                                onmouseleave="cancelOrderIdHold(event, this)"
+                                ontouchstart="startOrderIdHold(event, '${data.orderId}', this)"
+                                ontouchend="cancelOrderIdHold(event, this)"
+                                ontouchcancel="cancelOrderIdHold(event, this)"
+                                class="text-sm font-mono font-bold text-cyber-cyan cursor-pointer inline-block py-0.5 transition-all"
+                            >${data.orderId}</span>
                         </div>
                         <span class="px-3 py-1 rounded-full border text-[11px] font-mono font-extrabold ${badgeClasses}">
                             ${badgeText}
@@ -661,6 +876,10 @@
                         <div class="flex justify-between">
                             <span class="text-gray-400">Class / Roll:</span>
                             <span class="text-white">${data.studentClass || ''}-${data.section || ''} (Roll ${data.rollNo || ''})</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">WhatsApp:</span>
+                            <span class="text-white">${phoneDisplay}</span>
                         </div>
                         <div class="flex justify-between">
                             <span class="text-gray-400">Amount Due:</span>
@@ -678,7 +897,6 @@
         window.loadUserRecentOrders = async function() {
             const listEl = document.getElementById('recent-orders-list');
             
-            // Reload from localStorage so all permanent orders remain saved across app restarts
             myLocalOrderIds = JSON.parse(localStorage.getItem('ss_rc_my_permanent_orders') || '[]');
             myLocalOrdersMap = JSON.parse(localStorage.getItem('ss_rc_my_orders_data') || '{}');
 
@@ -729,18 +947,31 @@
                 }
 
                 const timestamp = data.createdAt ? new Date(data.createdAt) : null;
+                // Replaced emojis with Lucide SVG icons
                 const dateTimeHtml = timestamp
-                    ? `<span class="text-[10px] text-gray-400 font-mono block mt-0.5">📅 ${timestamp.toLocaleDateString()} | ⏰ ${timestamp.toLocaleTimeString()}</span>`
-                    : `<span class="text-[10px] text-gray-400 font-mono block mt-0.5">Saved Offline Request</span>`;
+                    ? `<span class="text-[10px] text-gray-400 font-mono flex items-center space-x-2 mt-1">
+                        <span class="inline-flex items-center space-x-1"><i data-lucide="calendar" class="w-3 h-3 text-cyber-cyan"></i><span>${timestamp.toLocaleDateString()}</span></span>
+                        <span class="text-gray-600">|</span>
+                        <span class="inline-flex items-center space-x-1"><i data-lucide="clock" class="w-3 h-3 text-cyber-pink"></i><span>${timestamp.toLocaleTimeString()}</span></span>
+                       </span>`
+                    : `<span class="text-[10px] text-gray-400 font-mono flex items-center space-x-1 mt-1"><i data-lucide="hard-drive" class="w-3 h-3 text-gray-400"></i><span>Saved Offline Request</span></span>`;
 
                 const summaryLine = data.studentName
                     ? `${data.studentName} • ₹${(data.total || 0).toLocaleString()}`
                     : `Offline Request`;
 
                 html += `
-                    <div onclick="document.getElementById('track-order-input').value='${id}'; trackOrderStatus();" class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan transition-all cursor-pointer flex items-center justify-between text-xs">
+                    <div onclick="handleOrderCardClick('${id}')" class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan transition-all cursor-pointer flex items-center justify-between text-xs">
                         <div>
-                            <span class="font-mono font-bold text-cyber-cyan block text-sm">${id}</span>
+                            <span
+                                onmousedown="startOrderIdHold(event, '${id}', this)"
+                                onmouseup="cancelOrderIdHold(event, this)"
+                                onmouseleave="cancelOrderIdHold(event, this)"
+                                ontouchstart="startOrderIdHold(event, '${id}', this)"
+                                ontouchend="cancelOrderIdHold(event, this)"
+                                ontouchcancel="cancelOrderIdHold(event, this)"
+                                class="font-mono font-bold text-cyber-cyan inline-block text-sm py-0.5 px-1 -ml-1 rounded transition-all"
+                            >${id}</span>
                             <span class="text-[11px] text-gray-300 block font-medium">${summaryLine}</span>
                             ${dateTimeHtml}
                         </div>
@@ -754,25 +985,6 @@
             listEl.innerHTML = html;
             if (window.lucide) lucide.createIcons();
         };
-
-        // Calculate extra service fee based on redeem code value tiers
-        function calculateExtraFee(val) {
-            if (val >= 10 && val <= 99) return 0;
-            if (val >= 100 && val <= 199) return 10;
-            if (val >= 200 && val <= 299) return 16;
-            if (val >= 300 && val <= 399) return 20;
-            if (val >= 400 && val <= 499) return 26;
-            if (val >= 500 && val <= 599) return 30;
-            if (val >= 600 && val <= 699) return 36;
-            if (val >= 700 && val <= 799) return 40;
-            if (val >= 800 && val <= 899) return 46;
-            if (val >= 900 && val <= 999) return 50;
-            if (val >= 1000 && val <= 1999) return 160;
-            if (val >= 2000 && val <= 2999) return 300;
-            if (val >= 3000 && val <= 3999) return 600;
-            if (val >= 4000 && val <= 5000) return 900;
-            return 0;
-        }
 
         window.handleAmountInput = function() {
             const input = document.getElementById('custom-amount-input');
@@ -861,6 +1073,7 @@
 
         window.openCartDrawer = function() {
             renderCartItems();
+            updateQuickFillBar();
             document.getElementById('cart-drawer').classList.remove('hidden');
         };
 
@@ -917,9 +1130,11 @@
             const studentClass = document.getElementById('student-class').value.trim();
             const rollNo = document.getElementById('student-roll').value.trim();
             const section = document.getElementById('student-section').value.trim();
+            const countryCode = document.getElementById('student-country-code').value.trim() || '+91';
+            const whatsappNumber = document.getElementById('student-whatsapp').value.trim();
 
-            if(!name || !studentClass || !rollNo || !section) {
-                showToast("Please fill in Name, Class, Roll No, and Section completely.");
+            if (!name || !studentClass || !rollNo || !section || !whatsappNumber) {
+                showToast("Please fill in Name, Class, Roll No, Section, and WhatsApp Number.");
                 return;
             }
             if (!/^[a-zA-Z\s]+$/.test(name)) {
@@ -938,10 +1153,28 @@
                 showToast("Section should only contain text letters (e.g. A).");
                 return;
             }
-            if(cartList.length === 0) {
+            if (!/^\+[0-9]{1,4}$/.test(countryCode)) {
+                showToast("Please enter a valid country code (e.g. +91).");
+                return;
+            }
+            if (!/^[0-9]{7,15}$/.test(whatsappNumber)) {
+                showToast("Please enter a valid WhatsApp number (numbers only).");
+                return;
+            }
+            if (cartList.length === 0) {
                 showToast("Your list is empty.");
                 return;
             }
+
+            // Save student profile for future Quick Fill
+            localStorage.setItem('ss_rc_saved_student_profile', JSON.stringify({
+                studentName: name,
+                studentClass,
+                rollNo,
+                section,
+                countryCode,
+                whatsappNumber
+            }));
 
             const total = cartList.reduce((sum, item) => sum + (item.price * item.qty), 0);
             const orderId = generateUniqueOrderId();
@@ -953,6 +1186,9 @@
                 studentClass,
                 rollNo,
                 section,
+                countryCode,
+                whatsappNumber,
+                whatsappFull: `${countryCode} ${whatsappNumber}`,
                 items: [...cartList],
                 total,
                 status: 'Pending',
@@ -960,7 +1196,6 @@
                 date: new Date().toLocaleDateString()
             };
 
-            // Save permanently without limiting length and store full details immediately
             if (!myLocalOrderIds.includes(orderId)) {
                 myLocalOrderIds.unshift(orderId);
                 localStorage.setItem('ss_rc_my_permanent_orders', JSON.stringify(myLocalOrderIds));
@@ -968,7 +1203,6 @@
             myLocalOrdersMap[orderId] = orderData;
             localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
 
-            // Immediately update UI so subsequent orders switch to regular fees
             renderPopularPackages();
             handleAmountInput();
 
@@ -986,6 +1220,8 @@
             document.getElementById('student-class').value = '';
             document.getElementById('student-roll').value = '';
             document.getElementById('student-section').value = '';
+            document.getElementById('student-country-code').value = '+91';
+            document.getElementById('student-whatsapp').value = '';
         };
 
         window.showReceiptModal = function(order) {
@@ -1006,6 +1242,10 @@
                     <span class="text-white">${order.studentClass}-${order.section} (Roll: ${order.rollNo})</span>
                 </div>
                 <div class="flex justify-between border-b border-cyber-border pb-1">
+                    <span class="text-gray-400">WhatsApp:</span>
+                    <span class="text-white">${order.whatsappFull}</span>
+                </div>
+                <div class="flex justify-between border-b border-cyber-border pb-1">
                     <span class="text-gray-400">Redeem Code:</span>
                     <span class="text-cyber-pink font-bold">Given at School after Cash</span>
                 </div>
@@ -1023,13 +1263,8 @@
         };
 
         window.copyReceiptCode = function() {
-            if(lastGeneratedCode) {
-                const dummy = document.createElement('textarea');
-                document.body.appendChild(dummy);
-                dummy.value = lastGeneratedCode;
-                dummy.select();
-                document.execCommand('copy');
-                document.body.removeChild(dummy);
+            if (lastGeneratedCode) {
+                copyTextDirectly(lastGeneratedCode);
                 showToast("Code copied to clipboard!");
             }
         };
@@ -1049,6 +1284,7 @@
             }
             renderPopularPackages();
             handleAmountInput();
+            subscribeToDynamicFees();
         }
 
         if (document.readyState === 'loading') {
