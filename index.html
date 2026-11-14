@@ -257,7 +257,7 @@
                     </div>
                 </div>
 
-                <p class="text-[10px] font-mono text-gray-400">Hold any notification for 1.5 seconds to select/deselect for deletion.</p>
+                <p class="text-[10px] font-mono text-gray-400">Tap any notification to view full letter & trust timer. Hold for 1.5s to select for deletion.</p>
 
                 <div id="notifications-list-container" class="space-y-3">
                     <div class="text-center py-6 text-gray-500 text-xs font-mono">No notifications yet.</div>
@@ -301,6 +301,44 @@
     <footer class="border-t border-cyber-border bg-cyber-card/50 py-4 text-center text-[10px] font-mono text-gray-500">
         S S | R C School Offline Hub • Secure School Transactions Only
     </footer>
+
+    <!-- NOTIFICATION LETTER & TRUST TIMER MODAL -->
+    <div id="notif-letter-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-6 space-y-5 shadow-2xl animate-fadeIn">
+            <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                <div class="flex items-center space-x-2 text-cyber-cyan">
+                    <i data-lucide="mail-open" class="w-5 h-5"></i>
+                    <h3 id="modal-letter-title" class="text-sm font-bold text-white uppercase tracking-wider">Official Update Letter</h3>
+                </div>
+                <button onclick="closeNotifLetterModal()" class="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
+                <!-- Big Bold Letter Content -->
+                <div id="modal-letter-body" class="space-y-3 font-medium text-sm text-gray-100"></div>
+
+                <!-- Trust Timer Box Inside Letter Modal -->
+                <div id="modal-trust-box" class="hidden p-3.5 rounded-xl bg-cyber-bg border border-cyber-green/50 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono text-cyber-green font-bold uppercase flex items-center space-x-1.5">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                            <span>Trust System Timer</span>
+                        </span>
+                        <span id="modal-trust-countdown" class="text-xs font-mono font-black text-cyber-cyan">24:00:00</span>
+                    </div>
+                    <p class="text-[10px] text-gray-400">Cash verified! Your redeem code will be dispatched within this window.</p>
+                </div>
+
+                <div id="modal-code-box" class="hidden pt-2"></div>
+            </div>
+
+            <button onclick="closeNotifLetterModal()" class="w-full py-2.5 rounded-xl bg-cyber-cyan text-gray-950 font-bold text-xs hover:opacity-90 active:scale-95 transition-all">
+                Close Letter
+            </button>
+        </div>
+    </div>
 
     <!-- POPUP NOTICE MODAL -->
     <div id="popup-notice-modal" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
@@ -531,6 +569,7 @@
         let myLocalOrdersMap = JSON.parse(localStorage.getItem('ss_rc_my_orders_data') || '{}');
         let myNotifications = JSON.parse(localStorage.getItem('ss_rc_my_notifications') || '[]');
         let selectedNotificationIndices = new Set();
+        let activeModalTimerInterval = null;
 
         // Custom ascending fee tiers array synced with admin configuration
         let customFeeTiersArray = [
@@ -557,7 +596,6 @@
             if (!auth || !db) return;
             try {
                 await signInAnonymously(auth);
-                // Listen to both old and new custom fee configurations from Firestore
                 const feeDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'feeTiersCustom');
                 onSnapshot(feeDocRef, (snap) => {
                     if (snap.exists() && snap.data().tiers) {
@@ -571,7 +609,6 @@
                 const oldFeeDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'feeTiers');
                 onSnapshot(oldFeeDocRef, (snap) => {
                     if (snap.exists() && !snap.data().tiers) {
-                        // Convert old object map if needed
                         renderPopularPackages();
                         handleAmountInput();
                     }
@@ -637,9 +674,10 @@
                 addNotification({
                     id: `cash_${orderId}_${Date.now()}`,
                     title: `Cash Received Confirmed - ${orderId}`,
-                    message: `Your cash payment has been safely received! Trust timer of 24 hours has started. We truly appreciate your trust and support.`,
+                    message: `Your cash payment has been safely verified and received! We deeply appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.`,
                     seen: false,
-                    createdAt: Date.now()
+                    createdAt: Date.now(),
+                    trustStart: order.cashReceivedAt
                 });
                 localStorage.setItem(cashKey, 'true');
                 localStorage.setItem(`ss_rc_trust_start_${orderId}`, order.cashReceivedAt);
@@ -652,7 +690,7 @@
                 addNotification({
                     id: `code_${orderId}_${Date.now()}`,
                     title: `Redeem Code(s) Dispatched - ${orderId}`,
-                    message: `Your redeem code(s) are ready: ${order.redeemCode}`,
+                    message: `Your redeem code(s) are ready and verified. Thank you for your patience!`,
                     code: order.redeemCode,
                     seen: false,
                     createdAt: Date.now()
@@ -705,7 +743,6 @@
             if (selectedNotificationIndices.size === 0) return;
             if (!confirm(`Delete ${selectedNotificationIndices.size} selected notification(s)?`)) return;
 
-            // Filter out selected indices
             const indicesArray = Array.from(selectedNotificationIndices).sort((a,b) => b-a);
             indicesArray.forEach(idx => {
                 myNotifications.splice(idx, 1);
@@ -718,7 +755,6 @@
             showToast("Selected notifications deleted.");
         };
 
-        // 1.5s Long Press Selection for Notifications
         let notifHoldTimer = null;
         window.startNotifHold = function(event, idx) {
             event.stopPropagation();
@@ -762,22 +798,6 @@
                 const unreadDot = !n.seen ? `<span class="w-2 h-2 rounded-full bg-cyber-pink inline-block"></span>` : ``;
                 const isSelected = selectedNotificationIndices.has(idx);
                 const borderClass = isSelected ? 'border-cyber-pink bg-cyber-pink/10 ring-2 ring-cyber-pink/40' : (!n.seen ? 'border-cyber-cyan/60 bg-cyber-cyan/5' : 'border-cyber-border');
-                
-                let codeActionHtml = '';
-                if (n.code) {
-                    codeActionHtml = `
-                        <div class="mt-2 pt-2 border-t border-cyber-border flex items-center justify-between">
-                            <span class="font-mono font-bold text-cyber-cyan select-all text-xs">${n.code}</span>
-                            <button
-                                onclick="event.stopPropagation(); copyTextDirectly('${n.code}'); showToast('Redeem code(s) copied!');"
-                                class="px-3 py-1.5 rounded-lg bg-cyber-cyan text-gray-950 font-bold text-xs active:scale-95 transition-all flex items-center space-x-1"
-                            >
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                <span>Copy Code</span>
-                            </button>
-                        </div>
-                    `;
-                }
 
                 return `
                     <div 
@@ -787,8 +807,8 @@
                         onttouchstart="startNotifHold(event, ${idx})"
                         ontouchend="cancelNotifHold()"
                         ontouchcancel="cancelNotifHold()"
-                        onclick="markSingleSeen(${idx})" 
-                        class="p-3.5 rounded-xl bg-cyber-bg border ${borderClass} space-y-1.5 transition-all cursor-pointer select-none"
+                        onclick="openNotificationLetter(${idx})" 
+                        class="p-4 rounded-xl bg-cyber-bg border ${borderClass} space-y-2 transition-all cursor-pointer select-none hover:border-cyber-cyan"
                     >
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-2">
@@ -797,8 +817,11 @@
                             </div>
                             <span class="text-[10px] font-mono text-gray-400">${dateStr}</span>
                         </div>
-                        <p class="text-xs text-gray-300 leading-relaxed">${n.message}</p>
-                        ${codeActionHtml}
+                        <p class="text-xs text-gray-300 line-clamp-2 leading-relaxed">${n.message}</p>
+                        <div class="flex items-center justify-between pt-1 text-[10px] font-mono text-cyber-cyan font-bold">
+                            <span>Tap to open full letter & trust timer →</span>
+                            ${n.code ? '<span class="text-cyber-green">Code Ready</span>' : ''}
+                        </div>
                     </div>
                 `;
             }).join('');
@@ -806,14 +829,84 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        window.markSingleSeen = function(idx) {
-            if (myNotifications[idx]) {
-                myNotifications[idx].seen = true;
-                localStorage.setItem('ss_rc_my_notifications', JSON.stringify(myNotifications));
-                updateNotificationBadges();
-                renderNotificationsList();
+        // Open Notification Letter Modal with big bold letter, description, and trust timer
+        window.openNotificationLetter = function(idx) {
+            const notif = myNotifications[idx];
+            if (!notif) return;
+
+            // Mark as seen
+            notif.seen = true;
+            localStorage.setItem('ss_rc_my_notifications', JSON.stringify(myNotifications));
+            updateNotificationBadges();
+            renderNotificationsList();
+
+            const modal = document.getElementById('notif-letter-modal');
+            const titleEl = document.getElementById('modal-letter-title');
+            const bodyEl = document.getElementById('modal-letter-body');
+            const trustBox = document.getElementById('modal-trust-box');
+            const codeBox = document.getElementById('modal-code-box');
+
+            titleEl.textContent = notif.title;
+            bodyEl.innerHTML = `<p class="text-base font-bold text-white leading-relaxed">${notif.message}</p>`;
+
+            // Check if this notification has a trust timer or cash received start
+            if (notif.trustStart || notif.title.includes('Cash Received')) {
+                trustBox.classList.remove('hidden');
+                const startTime = notif.trustStart || Date.now();
+                startModalTrustTimer(startTime);
+            } else {
+                trustBox.classList.add('hidden');
+                if (activeModalTimerInterval) clearInterval(activeModalTimerInterval);
             }
+
+            if (notif.code) {
+                codeBox.classList.remove('hidden');
+                codeBox.innerHTML = `
+                    <div class="p-3 rounded-xl bg-cyber-bg border border-cyber-cyan space-y-2">
+                        <span class="text-[10px] font-mono text-gray-400 uppercase">Your Verified Redeem Code:</span>
+                        <div class="flex items-center justify-between">
+                            <span class="font-mono font-black text-cyber-cyan text-sm select-all">${notif.code}</span>
+                            <button onclick="copyTextDirectly('${notif.code}'); showToast('Redeem code copied!');" class="px-3 py-1.5 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-xs active:scale-95 transition-all flex items-center space-x-1">
+                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                <span>Copy</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                codeBox.classList.add('hidden');
+                codeBox.innerHTML = '';
+            }
+
+            modal.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
         };
+
+        window.closeNotifLetterModal = function() {
+            document.getElementById('notif-letter-modal').classList.add('hidden');
+            if (activeModalTimerInterval) clearInterval(activeModalTimerInterval);
+        };
+
+        function startModalTrustTimer(startTime) {
+            const endTime = Number(startTime) + 24 * 60 * 60 * 1000;
+            if (activeModalTimerInterval) clearInterval(activeModalTimerInterval);
+
+            const countdownEl = document.getElementById('modal-trust-countdown');
+            activeModalTimerInterval = setInterval(() => {
+                const diff = endTime - Date.now();
+                if (diff <= 0) {
+                    if (countdownEl) countdownEl.textContent = "00:00:00";
+                    clearInterval(activeModalTimerInterval);
+                    return;
+                }
+                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const minutes = Math.floor((diff / 1000 / 60) % 60);
+                const seconds = Math.floor((diff / 1000) % 60);
+                if (countdownEl) {
+                    countdownEl.textContent = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+                }
+            }, 1000);
+        }
 
         function checkAndShowPopupNotice(notices) {
             if (!notices || notices.length === 0) return;
@@ -899,7 +992,6 @@
 
         function isFirstTimeUser() { return myLocalOrderIds.length === 0; }
 
-        // Calculate Extra Fee matching the custom ascending ranges from admin settings
         function calculateExtraFee(val) {
             for (const tier of customFeeTiersArray) {
                 if (val >= tier.min && val <= tier.max) {
@@ -971,7 +1063,6 @@
         window.validateNameInput = function(el) { el.value = el.value.replace(/[^a-zA-Z\s]/g, ''); };
         window.validateSectionInput = function(el) { el.value = el.value.replace(/[^a-zA-Z]/g, '').toUpperCase(); };
         
-        // Country Code & Phone Number Validation
         window.onCountryCodeChange = function() {
             const select = document.getElementById('country-code-select');
             const phoneInput = document.getElementById('student-whatsapp');
@@ -1171,6 +1262,17 @@
                 statusNote = 'This order request was rejected.';
             }
 
+            // Trust Timer integration for specific order if cash was received
+            let trustHtml = '';
+            if (data.cashReceivedAt && !data.redeemCode) {
+                trustHtml = `
+                    <div class="mt-2 pt-2 border-t border-cyber-border/80 flex items-center justify-between text-xs font-mono">
+                        <span class="text-cyber-green font-bold flex items-center space-x-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i><span>Trust Timer Active:</span></span>
+                        <span id="order-card-timer-${data.orderId}" class="font-extrabold text-cyber-cyan">Running</span>
+                    </div>
+                `;
+            }
+
             containerEl.innerHTML = `
                 <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-cyan/50 space-y-3 shadow-lg animate-fadeIn">
                     <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -1186,8 +1288,10 @@
                         <div class="flex justify-between"><span class="text-gray-400">Amount Due:</span><span class="text-cyber-cyan font-bold">₹${(data.total || 0).toLocaleString()}</span></div>
                     </div>
                     <p class="text-[11px] text-gray-300 bg-cyber-bg p-3 rounded-xl border border-cyber-border">${statusNote}</p>
+                    ${trustHtml}
                 </div>
             `;
+            if (window.lucide) lucide.createIcons();
         }
 
         window.loadUserRecentOrders = async function() {
