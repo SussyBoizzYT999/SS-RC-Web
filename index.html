@@ -1,1 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S S | R C School Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        cyber: {
+                            bg: '#090a0f',
+                            card: '#131722',
+                            border: '#222b3c',
+                            cyan: '#00f0ff',
+                            pink: '#ff007f',
+                            purple: '#b026ff',
+                            green: '#00ff66',
+                            yellow: '#ffe600'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090a0f;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #222b3c;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-cyber-bg text-gray-100 font-sans min-h-screen flex flex-col justify-between selection:bg-cyber-cyan selection:text-gray-950">
 
+    <!-- Top Glow Header Bar -->
+    <div class="h-1 bg-gradient-to-r from-cyber-cyan via-cyber-pink to-cyber-purple w-full"></div>
+
+    <!-- Main Header -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-cyber-bg/90 border-b border-cyber-border px-4 py-3">
+        <div class="max-w-md mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <button onclick="openNavMenu()" aria-label="Open Navigation Menu" class="p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-200 hover:text-cyber-cyan hover:border-cyber-cyan transition-all">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div>
+                    <h1 class="text-lg font-black tracking-wider flex items-center space-x-1">
+                        <span class="text-cyber-cyan">S S</span>
+                        <span class="text-cyber-pink font-light">|</span>
+                        <span class="text-cyber-purple">R C</span>
+                    </h1>
+                    <p class="text-[9px] font-mono text-gray-400 tracking-wider">SCHOOL OFFLINE PORTAL</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-2">
+                <button onclick="openCartDrawer()" class="relative p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-cyan transition-all flex items-center space-x-1.5">
+                    <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                    <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-cyber-pink text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="max-w-md mx-auto w-full px-4 py-6 flex-1 space-y-6">
+
+        <!-- HOME VIEW -->
+        <div id="view-home" class="space-y-6 animate-fadeIn">
+            <!-- Welcome Banner -->
+            <div class="p-5 rounded-2xl bg-gradient-to-br from-cyber-card to-[#1a2135] border border-cyber-border shadow-xl relative overflow-hidden">
+                <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-cyan/10 rounded-full blur-2xl pointer-events-none"></div>
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="text-xl font-bold tracking-tight text-white">Hello Classmates! 👋</h2>
+                    <span id="first-time-badge" class="hidden px-2.5 py-0.5 rounded-full bg-cyber-green/15 border border-cyber-green/40 text-cyber-green text-[10px] font-mono font-bold uppercase">
+                        🎉 1st Order: ₹0 Fee!
+                    </span>
+                </div>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                    Enter your amount or select items below. All payments are done strictly offline at school or using school redeem codes. No online payments!
+                </p>
+            </div>
+
+            <!-- Quick Amount Input Box (10 to 5000) -->
+            <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-mono text-cyber-cyan uppercase tracking-wider font-semibold">Custom Amount Entry</span>
+                    <span class="text-[10px] font-mono text-gray-400">Min: ₹10 | Max: ₹5,000</span>
+                </div>
+                
+                <div class="space-y-2">
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono font-bold">₹</span>
+                        <input type="number" id="custom-amount-input" min="10" max="5000" value="100" oninput="handleAmountInput()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl pl-9 pr-4 py-3 text-lg font-mono font-bold text-cyber-cyan focus:outline-none focus:border-cyber-cyan">
+                    </div>
+                </div>
+
+                <!-- Total Calculation Display -->
+                <div class="space-y-1.5 pt-3 border-t border-cyber-border">
+                    <div class="flex items-center justify-between text-xs font-mono text-gray-400">
+                        <span>Code Value:</span>
+                        <span id="base-amount">₹100</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs font-mono text-cyber-pink">
+                        <span>Extra Service Fee:</span>
+                        <span id="extra-fee">+ ₹10</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-2 border-t border-cyber-border/60">
+                        <span class="text-xs font-mono text-gray-300 uppercase font-semibold">Total Amount to Pay:</span>
+                        <span id="calculated-total" class="text-xl font-black text-cyber-cyan font-mono">₹110</span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons (No online pay, offline school actions) -->
+                <div class="grid grid-cols-2 gap-3 pt-2">
+                    <button onclick="addCustomToCart()" class="py-3 px-3 rounded-xl bg-cyber-card border border-cyber-cyan/40 text-cyber-cyan hover:bg-cyber-cyan/10 text-xs font-bold transition-all flex items-center justify-center space-x-1.5">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Add to List</span>
+                    </button>
+                    <button onclick="openDirectSchoolCheckout()" class="py-3 px-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-gray-950 font-extrabold text-xs transition-all shadow-md shadow-cyber-cyan/20 flex items-center justify-center space-x-1.5">
+                        <i data-lucide="school" class="w-4 h-4"></i>
+                        <span>Pay at School</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Item Packages -->
+            <div class="space-y-3">
+                <h3 class="text-xs font-mono text-gray-400 uppercase tracking-widest px-1">Popular School Packages</h3>
+                <div id="popular-packages-container" class="grid grid-cols-1 gap-3">
+                    <!-- Rendered dynamically via renderPopularPackages() -->
+                </div>
+            </div>
+        </div>
+
+        <!-- TRACK ORDER VIEW -->
+        <div id="view-track" class="hidden space-y-5 animate-fadeIn">
+            <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Track Your Order</h2>
+                        <p class="text-[11px] text-gray-400">Search by Order ID or view your saved requests below</p>
+                    </div>
+                    <div class="w-9 h-9 rounded-xl bg-cyber-cyan/10 border border-cyber-cyan/30 flex items-center justify-center text-cyber-cyan">
+                        <i data-lucide="search" class="w-4 h-4"></i>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <input type="text" id="track-order-input" placeholder="e.g. REQ-9X4K2A" onkeydown="if(event.key==='Enter') trackOrderStatus()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl px-4 py-3 text-sm font-mono uppercase text-cyber-cyan focus:outline-none focus:border-cyber-cyan">
+                    <button onclick="trackOrderStatus()" class="w-full py-3 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-600 text-gray-950 font-extrabold text-xs shadow-md shadow-cyber-cyan/20 flex items-center justify-center space-x-2">
+                        <i data-lucide="radar" class="w-4 h-4"></i>
+                        <span>Check Order Status</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Track Result Card -->
+            <div id="track-result-container" class="hidden"></div>
+
+            <!-- All My Permanent Requests Section with Refresh Button -->
+            <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
+                <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                    <div>
+                        <h3 class="text-sm font-bold text-white">All My Requests</h3>
+                        <p class="text-[10px] text-gray-400 font-mono">Permanently saved on this device</p>
+                    </div>
+                    <button onclick="loadUserRecentOrders()" class="px-3 py-1.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan text-cyber-cyan text-xs font-semibold flex items-center space-x-1.5 transition-all">
+                        <i data-lucide="rotate-cw" class="w-3.5 h-3.5"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <div id="recent-orders-list" class="space-y-2.5 max-h-64 overflow-y-auto">
+                    <div class="text-center py-4 text-gray-500 text-xs font-mono">No requests saved on this device yet.</div>
+                </div>
+            </div>
+
+            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                <span>Back to Home</span>
+            </button>
+        </div>
+
+        <!-- INFO / EXTRA PAGES VIEW (About, Terms, Privacy, Rules) -->
+        <div id="view-info" class="hidden space-y-5 animate-fadeIn">
+            <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
+                <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                    <h2 id="info-page-title" class="text-lg font-bold text-cyber-cyan">Information</h2>
+                    <span class="text-[10px] font-mono text-gray-500 uppercase">S S | R C</span>
+                </div>
+                <div id="info-page-body" class="space-y-3 text-xs text-gray-300 leading-relaxed"></div>
+            </div>
+
+            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                <span>Back to Home</span>
+            </button>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-cyber-border bg-cyber-card/50 py-4 text-center text-[10px] font-mono text-gray-500">
+        S S | R C School Offline Hub • Secure School Transactions Only
+    </footer>
+
+    <!-- ================= SLIDE-OVER NAVIGATION DRAWER ================= -->
+    <div id="nav-drawer" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex">
+        <div class="w-72 max-w-[82vw] bg-cyber-card border-r border-cyber-border h-full flex flex-col justify-between p-5 shadow-2xl animate-fadeIn">
+            <div class="space-y-6">
+                <!-- Drawer Header -->
+                <div class="flex items-center justify-between border-b border-cyber-border pb-4">
+                    <div>
+                        <span class="text-base font-black tracking-wider text-cyber-cyan">S S <span class="text-cyber-pink font-light">|</span> <span class="text-cyber-purple">R C</span></span>
+                        <p class="text-[10px] font-mono text-gray-400">NAVIGATION MENU</p>
+                    </div>
+                    <button onclick="closeNavMenu()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- PRIMARY DIVISION: HOME & TRACK ORDER -->
+                <div class="space-y-2">
+                    <p class="text-[10px] font-mono uppercase tracking-widest text-cyber-cyan px-2">Main Portal</p>
+                    <div class="p-2 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-1">
+                        <button onclick="switchPage('home')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-cyan/15 hover:text-cyber-cyan transition-all">
+                            <i data-lucide="home" class="w-4 h-4 text-cyber-cyan"></i>
+                            <span>Home</span>
+                        </button>
+                        <button onclick="switchPage('track')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-pink/15 hover:text-cyber-pink transition-all">
+                            <i data-lucide="package-search" class="w-4 h-4 text-cyber-pink"></i>
+                            <span>Track Order</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- SECONDARY DIVISION: EXTRA / GENERAL INFO -->
+                <div class="space-y-2 pt-2 border-t border-cyber-border/70">
+                    <p class="text-[10px] font-mono uppercase tracking-widest text-gray-500 px-2">More & Policies</p>
+                    <div class="p-2 rounded-2xl bg-cyber-bg/40 border border-cyber-border/60 space-y-1">
+                        <button onclick="openInfoPage('about')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                            <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <span>About S S | R C</span>
+                        </button>
+                        <button onclick="openInfoPage('terms')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                            <i data-lucide="file-text" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <span>Terms & Conditions</span>
+                        </button>
+                        <button onclick="openInfoPage('privacy')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <span>Privacy Policy</span>
+                        </button>
+                        <button onclick="openInfoPage('rules')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                            <i data-lucide="book-open" class="w-3.5 h-3.5 text-gray-400"></i>
+                            <span>Offline School Rules</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-[10px] font-mono text-gray-500 text-center border-t border-cyber-border pt-3">
+                Offline Cash Only • No Online Gateway
+            </div>
+        </div>
+        <div class="flex-1" onclick="closeNavMenu()"></div>
+    </div>
+
+    <!-- ================= CART / LIST DRAWER ================= -->
+    <div id="cart-drawer" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex flex-col justify-end">
+        <div class="bg-cyber-card border-t border-cyber-border rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl animate-fadeIn">
+            <div class="p-4 border-b border-cyber-border flex items-center justify-between">
+                <div>
+                    <h3 class="text-base font-bold text-white">My Added Items & Total</h3>
+                    <p class="text-[10px] font-mono text-gray-400">Book your order now & pay cash at school</p>
+                </div>
+                <button onclick="closeCartDrawer()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="cart-items-list" class="p-4 overflow-y-auto space-y-3 flex-1 max-h-48">
+                <!-- Populated via JS -->
+            </div>
+
+            <div class="p-4 border-t border-cyber-border bg-cyber-bg space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-mono text-gray-400 uppercase">Total Offline Due:</span>
+                    <span id="drawer-total-amount" class="text-xl font-black text-cyber-cyan font-mono">₹0</span>
+                </div>
+
+                <!-- Separate Student Details Inputs with Strict Types & Clean Placeholders -->
+                <div class="space-y-2">
+                    <input type="text" id="student-name" placeholder="Full Name" oninput="validateNameInput(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white">
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="number" id="student-class" placeholder="Class" min="1" max="12" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white">
+                        <input type="number" id="student-roll" placeholder="Roll No" min="1" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-cyber-cyan text-white">
+                        <input type="text" id="student-section" placeholder="Section" maxlength="2" oninput="validateSectionInput(this)" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-3 py-2.5 text-xs uppercase focus:outline-none focus:border-cyber-cyan text-white">
+                    </div>
+                </div>
+
+                <!-- Single Offline Order Confirmation Button -->
+                <div class="pt-1">
+                    <button onclick="confirmSchoolPayment()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-500 text-gray-950 font-extrabold text-xs hover:opacity-90 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-cyber-cyan/20">
+                        <i data-lucide="school" class="w-4 h-4"></i>
+                        <span>Confirm Order (Pay Cash at School)</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= RECEIPT / SUCCESS MODAL ================= -->
+    <div id="receipt-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl">
+            <div class="text-center space-y-1">
+                <div class="w-10 h-10 rounded-full bg-cyber-cyan/20 border border-cyber-cyan mx-auto flex items-center justify-center text-cyber-cyan">
+                    <i data-lucide="check" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-base font-bold text-white">Order Request Sent!</h3>
+                <p class="text-[11px] text-gray-300 leading-relaxed">Bring the cash to school. Your redeem code will be handed over to you <span class="text-cyber-cyan font-bold">only after</span> you pay at school.</p>
+            </div>
+
+            <div id="receipt-details" class="p-3 rounded-xl bg-cyber-bg border border-cyber-border space-y-2 font-mono text-[11px] text-gray-300">
+                <!-- Receipt info -->
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="copyReceiptCode()" class="py-2.5 rounded-xl bg-cyber-card border border-cyber-border hover:border-cyber-cyan text-xs font-semibold flex items-center justify-center space-x-1.5">
+                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                    <span>Copy Order ID</span>
+                </button>
+                <button onclick="closeReceiptModal()" class="py-2.5 rounded-xl bg-cyber-cyan text-gray-950 font-bold text-xs">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 left-4 right-4 max-w-sm mx-auto z-50 transform translate-y-20 opacity-0 transition-all duration-300 px-4 py-3 rounded-xl bg-cyber-card border border-cyber-cyan text-white text-xs flex items-center space-x-2 shadow-2xl">
+        <i data-lucide="info" class="w-4 h-4 text-cyber-cyan flex-shrink-0"></i>
+        <span id="toast-message" class="flex-1">Notification</span>
+    </div>
+
+    <!-- Firebase & App Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvf7rZzqY38wtelwQzBkJwAMcqd0cf3SM",
+            authDomain: "ss-rc-56539.firebaseapp.com",
+            projectId: "ss-rc-56539",
+            storageBucket: "ss-rc-56539.firebasestorage.app",
+            messagingSenderId: "1078170890448",
+            appId: "1:1078170890448:web:00a2609863f5004c8a2ed5",
+            measurementId: "G-RBF1S5P2DX"
+        };
+
+        let app = null;
+        let auth = null;
+        let db = null;
+
+        try {
+            app = initializeApp(firebaseConfig);
+            try {
+                getAnalytics(app);
+            } catch (e) {
+                console.warn("Analytics skipped:", e);
+            }
+            auth = getAuth(app);
+            db = getFirestore(app);
+        } catch (err) {
+            console.error("Firebase init error:", err);
+        }
+
+        let cartList = [];
+        let lastGeneratedCode = "";
+        // Load permanently stored order IDs & full offline order objects so they never vanish when closed/rejoined
+        let myLocalOrderIds = JSON.parse(localStorage.getItem('ss_rc_my_permanent_orders') || '[]');
+        let myLocalOrdersMap = JSON.parse(localStorage.getItem('ss_rc_my_orders_data') || '{}');
+
+        // Helper: Check if user is a first-time buyer (0 orders placed on this device)
+        function isFirstTimeUser() {
+            return myLocalOrderIds.length === 0;
+        }
+
+        // Popular school packages definition
+        const POPULAR_PACKAGES = [
+            { codeVal: 150, regularFee: 10, color: 'cyan' },
+            { codeVal: 450, regularFee: 26, color: 'pink' },
+            { codeVal: 500, regularFee: 30, color: 'purple' }
+        ];
+
+        // Render Popular Packages with strikethrough pricing for first-time users
+        window.renderPopularPackages = function() {
+            const container = document.getElementById('popular-packages-container');
+            const badgeEl = document.getElementById('first-time-badge');
+            const firstTime = isFirstTimeUser();
+
+            if (badgeEl) {
+                if (firstTime) badgeEl.classList.remove('hidden');
+                else badgeEl.classList.add('hidden');
+            }
+
+            if (!container) return;
+
+            container.innerHTML = POPULAR_PACKAGES.map(pkg => {
+                const regularTotal = pkg.codeVal + pkg.regularFee;
+                const finalFee = firstTime ? 0 : pkg.regularFee;
+                const finalTotal = pkg.codeVal + finalFee;
+
+                const feeHtml = firstTime
+                    ? `<span class="line-through text-gray-500">₹${pkg.regularFee} extra fee</span> <span class="text-cyber-green font-bold">₹0 extra fee</span>`
+                    : `+ ₹${pkg.regularFee} extra fee`;
+
+                const payHtml = firstTime
+                    ? `Amount to Pay: <span class="line-through text-gray-500 mr-1">₹${regularTotal}</span> <span class="text-cyber-green font-extrabold">₹${finalTotal}</span>`
+                    : `Amount to Pay: ₹${regularTotal}`;
+
+                const itemLabel = firstTime
+                    ? `Redeem Code ₹${pkg.codeVal} (1st Order ₹0 fee)`
+                    : `Redeem Code ₹${pkg.codeVal} (+₹${pkg.regularFee} fee)`;
+
+                const btnClasses = pkg.color === 'cyan'
+                    ? 'bg-cyber-cyan/15 text-cyber-cyan hover:bg-cyber-cyan hover:text-gray-950'
+                    : pkg.color === 'pink'
+                    ? 'bg-cyber-pink/15 text-cyber-pink hover:bg-cyber-pink hover:text-white'
+                    : 'bg-cyber-purple/15 text-cyber-purple hover:bg-cyber-purple hover:text-white';
+
+                const textAccent = pkg.color === 'cyan'
+                    ? 'text-cyber-cyan'
+                    : pkg.color === 'pink'
+                    ? 'text-cyber-pink'
+                    : 'text-cyber-purple';
+
+                return `
+                    <div class="p-4 rounded-xl bg-cyber-card border border-cyber-border flex items-center justify-between hover:border-cyber-${pkg.color} transition-all">
+                        <div>
+                            <h4 class="text-sm font-bold text-white">Redeem Code — ₹${pkg.codeVal}</h4>
+                            <p class="text-[11px] text-gray-400">Code ₹${pkg.codeVal} + ${feeHtml}</p>
+                            <span class="text-xs font-mono ${textAccent} font-bold mt-1 inline-block">${payHtml}</span>
+                        </div>
+                        <button onclick="addPresetToCart('${itemLabel}', ${finalTotal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all">
+                            Add
+                        </button>
+                    </div>
+                `;
+            }).join('');
+        };
+
+        // Input validation helpers
+        window.validateNameInput = function(el) {
+            el.value = el.value.replace(/[^a-zA-Z\s]/g, '');
+        };
+
+        window.validateSectionInput = function(el) {
+            el.value = el.value.replace(/[^a-zA-Z]/g, '').toUpperCase();
+        };
+
+        // Generate guaranteed unique random Order ID per order
+        function generateUniqueOrderId() {
+            const timePart = Date.now().toString(36).slice(-4).toUpperCase();
+            const randPart = Math.random().toString(36).substring(2, 6).toUpperCase();
+            return `REQ-${timePart}${randPart}`;
+        }
+
+        // Navigation & View Switching
+        window.openNavMenu = function() {
+            document.getElementById('nav-drawer').classList.remove('hidden');
+        };
+
+        window.closeNavMenu = function() {
+            document.getElementById('nav-drawer').classList.add('hidden');
+        };
+
+        window.switchPage = function(page) {
+            closeNavMenu();
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-track').classList.add('hidden');
+            document.getElementById('view-info').classList.add('hidden');
+
+            if (page === 'home') {
+                document.getElementById('view-home').classList.remove('hidden');
+            } else if (page === 'track') {
+                document.getElementById('view-track').classList.remove('hidden');
+                document.getElementById('track-order-input').focus();
+                loadUserRecentOrders();
+            } else if (page === 'info') {
+                document.getElementById('view-info').classList.remove('hidden');
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        window.openInfoPage = function(type) {
+            const titleEl = document.getElementById('info-page-title');
+            const bodyEl = document.getElementById('info-page-body');
+
+            const contentMap = {
+                about: {
+                    title: 'About S S | R C',
+                    html: `
+                        <p><strong class="text-white">S S | R C School Hub</strong> is built exclusively for classmates to request redeem codes, study notes, and school kits without needing any online bank account or UPI app.</p>
+                        <p>Simply place your booking online, note down your unique Order ID, and bring the exact cash to school to collect your code in person.</p>
+                    `
+                },
+                terms: {
+                    title: 'Terms & Conditions',
+                    html: `
+                        <p>• All orders are strictly <strong class="text-cyber-cyan">cash-at-school only</strong>. No online payments are accepted.</p>
+                        <p>• Redeem codes are only handed over after full cash payment is received in person at school.</p>
+                        <p>• First-time users get <strong class="text-cyber-green">₹0 extra service fee</strong> on their first redeem code order (₹10 to ₹5,000).</p>
+                        <p>• Service fees apply automatically on subsequent orders based on the selected redeem code value tier.</p>
+                        <p>• Unpaid requests may be marked as <span class="text-red-400 font-bold">Rejected</span> if cash is not handed over on time.</p>
+                    `
+                },
+                privacy: {
+                    title: 'Privacy Policy',
+                    html: `
+                        <p>We only collect your <strong class="text-white">Full Name, Class, Roll Number, and Section</strong> so we can identify you at school and hand over the right order.</p>
+                        <p>Your details are never shared outside school or used for any external purpose.</p>
+                    `
+                },
+                rules: {
+                    title: 'Offline School Rules',
+                    html: `
+                        <p>1. Save or copy your unique <strong class="text-cyber-cyan">Order ID</strong> right after booking.</p>
+                        <p>2. Bring exact change in cash to school so handover is quick during break time.</p>
+                        <p>3. Use the <strong class="text-cyber-pink">Track Order</strong> menu option anytime to check if your order is Pending, Accepted, or Rejected.</p>
+                    `
+                }
+            };
+
+            const selected = contentMap[type] || contentMap.about;
+            titleEl.textContent = selected.title;
+            bodyEl.innerHTML = selected.html;
+            switchPage('info');
+        };
+
+        window.trackOrderStatus = async function() {
+            const inputEl = document.getElementById('track-order-input');
+            const resultEl = document.getElementById('track-result-container');
+            const orderId = inputEl.value.trim().toUpperCase();
+
+            if (!orderId) {
+                showToast("Please paste or type your Order ID first.");
+                return;
+            }
+
+            resultEl.classList.remove('hidden');
+            resultEl.innerHTML = `
+                <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border text-center text-xs font-mono text-gray-400">
+                    Checking status for <span class="text-cyber-cyan font-bold">${orderId}</span>...
+                </div>
+            `;
+
+            try {
+                if (auth && db) {
+                    await signInAnonymously(auth);
+                    const ordersRef = collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolOrders');
+                    const q = query(ordersRef, where('orderId', '==', orderId));
+                    const snapshot = await getDocs(q);
+
+                    if (!snapshot.empty) {
+                        const data = snapshot.docs[0].data();
+                        // Keep local backup updated with latest status
+                        myLocalOrdersMap[orderId] = {
+                            ...(myLocalOrdersMap[orderId] || {}),
+                            ...data
+                        };
+                        localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
+                        renderOrderStatusCard(data, resultEl);
+                        return;
+                    }
+                }
+
+                // Fallback to locally stored order data if offline or not yet synced
+                if (myLocalOrdersMap[orderId]) {
+                    renderOrderStatusCard(myLocalOrdersMap[orderId], resultEl);
+                    return;
+                }
+
+                resultEl.innerHTML = `
+                    <div class="p-5 rounded-2xl bg-cyber-card border border-red-500/40 space-y-2 text-center animate-fadeIn">
+                        <p class="text-sm font-bold text-red-400">Order ID Not Found</p>
+                        <p class="text-xs text-gray-400">No request matched <span class="font-mono text-white">${orderId}</span>. Please double-check your ID and try again.</p>
+                    </div>
+                `;
+            } catch (err) {
+                console.error(err);
+                if (myLocalOrdersMap[orderId]) {
+                    renderOrderStatusCard(myLocalOrdersMap[orderId], resultEl);
+                } else {
+                    resultEl.innerHTML = `
+                        <div class="p-4 rounded-2xl bg-cyber-card border border-red-500/40 text-xs text-red-400 text-center">
+                            Unable to check status right now. Please check your internet connection and try again.
+                        </div>
+                    `;
+                }
+            }
+        };
+
+        function renderOrderStatusCard(data, containerEl) {
+            const rawStatus = (data.status || 'Pending').toLowerCase();
+
+            let badgeText = 'STILL PENDING';
+            let badgeClasses = 'bg-cyber-yellow/15 text-cyber-yellow border-cyber-yellow/40';
+            let statusNote = 'Waiting for cash payment at school.';
+
+            if (rawStatus.includes('accept') || rawStatus.includes('approv') || rawStatus.includes('complet')) {
+                badgeText = 'ACCEPTED';
+                badgeClasses = 'bg-cyber-green/15 text-cyber-green border-cyber-green/40';
+                statusNote = 'Your order has been accepted! Collect your redeem code at school.';
+            } else if (rawStatus.includes('reject') || rawStatus.includes('declin') || rawStatus.includes('cancel')) {
+                badgeText = 'REJECTED';
+                badgeClasses = 'bg-red-500/15 text-red-400 border-red-500/40';
+                statusNote = 'This order request was rejected.';
+            }
+
+            containerEl.innerHTML = `
+                <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-cyan/50 space-y-3 shadow-lg animate-fadeIn">
+                    <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                        <div>
+                            <span class="text-[10px] font-mono text-gray-400 block">ORDER ID</span>
+                            <span class="text-sm font-mono font-bold text-cyber-cyan">${data.orderId}</span>
+                        </div>
+                        <span class="px-3 py-1 rounded-full border text-[11px] font-mono font-extrabold ${badgeClasses}">
+                            ${badgeText}
+                        </span>
+                    </div>
+
+                    <div class="space-y-1.5 text-xs font-mono">
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Student:</span>
+                            <span class="text-white">${data.studentName || 'N/A'}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Class / Roll:</span>
+                            <span class="text-white">${data.studentClass || ''}-${data.section || ''} (Roll ${data.rollNo || ''})</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-400">Amount Due:</span>
+                            <span class="text-cyber-cyan font-bold">₹${(data.total || 0).toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <p class="text-[11px] text-gray-300 bg-cyber-bg p-3 rounded-xl border border-cyber-border">
+                        ${statusNote}
+                    </p>
+                </div>
+            `;
+        }
+
+        window.loadUserRecentOrders = async function() {
+            const listEl = document.getElementById('recent-orders-list');
+            
+            // Reload from localStorage so all permanent orders remain saved across app restarts
+            myLocalOrderIds = JSON.parse(localStorage.getItem('ss_rc_my_permanent_orders') || '[]');
+            myLocalOrdersMap = JSON.parse(localStorage.getItem('ss_rc_my_orders_data') || '{}');
+
+            if (myLocalOrderIds.length === 0) {
+                listEl.innerHTML = `<div class="text-center py-4 text-gray-500 text-xs font-mono">No requests saved on this device yet.</div>`;
+                return;
+            }
+
+            listEl.innerHTML = `<div class="text-center py-3 text-gray-400 text-xs font-mono">Loading your requests...</div>`;
+
+            const cloudOrdersById = {};
+            try {
+                if (auth && db) {
+                    await signInAnonymously(auth);
+                    const ordersRef = collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolOrders');
+                    for (let i = 0; i < myLocalOrderIds.length; i += 30) {
+                        const chunk = myLocalOrderIds.slice(i, i + 30);
+                        const q = query(ordersRef, where('orderId', 'in', chunk));
+                        const snapshot = await getDocs(q);
+                        snapshot.docs.forEach(docSnap => {
+                            const data = docSnap.data();
+                            cloudOrdersById[data.orderId] = data;
+                            myLocalOrdersMap[data.orderId] = {
+                                ...(myLocalOrdersMap[data.orderId] || {}),
+                                ...data
+                            };
+                        });
+                    }
+                    localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
+                }
+            } catch (err) {
+                console.error(err);
+            }
+
+            let html = '';
+            myLocalOrderIds.forEach(id => {
+                const data = cloudOrdersById[id] || myLocalOrdersMap[id] || { orderId: id, status: 'Pending' };
+                const rawStatus = (data.status || 'Pending').toLowerCase();
+
+                let badgeColor = 'text-cyber-yellow bg-cyber-yellow/10 border-cyber-yellow/30';
+                let statusLabel = 'PENDING';
+                if (rawStatus.includes('accept') || rawStatus.includes('approv') || rawStatus.includes('complet')) {
+                    badgeColor = 'text-cyber-green bg-cyber-green/10 border-cyber-green/30';
+                    statusLabel = 'ACCEPTED';
+                } else if (rawStatus.includes('reject') || rawStatus.includes('declin') || rawStatus.includes('cancel')) {
+                    badgeColor = 'text-red-400 bg-red-500/10 border-red-500/30';
+                    statusLabel = 'REJECTED';
+                }
+
+                const timestamp = data.createdAt ? new Date(data.createdAt) : null;
+                const dateTimeHtml = timestamp
+                    ? `<span class="text-[10px] text-gray-400 font-mono block mt-0.5">📅 ${timestamp.toLocaleDateString()} | ⏰ ${timestamp.toLocaleTimeString()}</span>`
+                    : `<span class="text-[10px] text-gray-400 font-mono block mt-0.5">Saved Offline Request</span>`;
+
+                const summaryLine = data.studentName
+                    ? `${data.studentName} • ₹${(data.total || 0).toLocaleString()}`
+                    : `Offline Request`;
+
+                html += `
+                    <div onclick="document.getElementById('track-order-input').value='${id}'; trackOrderStatus();" class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan transition-all cursor-pointer flex items-center justify-between text-xs">
+                        <div>
+                            <span class="font-mono font-bold text-cyber-cyan block text-sm">${id}</span>
+                            <span class="text-[11px] text-gray-300 block font-medium">${summaryLine}</span>
+                            ${dateTimeHtml}
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeColor}">
+                            ${statusLabel}
+                        </span>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+            if (window.lucide) lucide.createIcons();
+        };
+
+        // Calculate extra service fee based on redeem code value tiers
+        function calculateExtraFee(val) {
+            if (val >= 10 && val <= 99) return 0;
+            if (val >= 100 && val <= 199) return 10;
+            if (val >= 200 && val <= 299) return 16;
+            if (val >= 300 && val <= 399) return 20;
+            if (val >= 400 && val <= 499) return 26;
+            if (val >= 500 && val <= 599) return 30;
+            if (val >= 600 && val <= 699) return 36;
+            if (val >= 700 && val <= 799) return 40;
+            if (val >= 800 && val <= 899) return 46;
+            if (val >= 900 && val <= 999) return 50;
+            if (val >= 1000 && val <= 1999) return 160;
+            if (val >= 2000 && val <= 2999) return 300;
+            if (val >= 3000 && val <= 3999) return 600;
+            if (val >= 4000 && val <= 5000) return 900;
+            return 0;
+        }
+
+        window.handleAmountInput = function() {
+            const input = document.getElementById('custom-amount-input');
+            let val = parseInt(input.value) || 0;
+            if (val < 10) val = 10;
+            if (val > 5000) val = 5000;
+            
+            const regularFee = calculateExtraFee(val);
+            const regularTotal = val + regularFee;
+            const firstTime = isFirstTimeUser();
+            const actualFee = firstTime ? 0 : regularFee;
+            const actualTotal = val + actualFee;
+
+            document.getElementById('base-amount').textContent = `₹${val}`;
+
+            const feeEl = document.getElementById('extra-fee');
+            const totalEl = document.getElementById('calculated-total');
+
+            if (firstTime && regularFee > 0) {
+                feeEl.innerHTML = `<span class="line-through text-gray-500 mr-1">+ ₹${regularFee}</span> <span class="text-cyber-green font-bold">₹0 (1st Order Free!)</span>`;
+                totalEl.innerHTML = `<span class="line-through text-gray-500 text-sm mr-1.5">₹${regularTotal}</span><span class="text-cyber-green">₹${actualTotal}</span>`;
+            } else if (firstTime && regularFee === 0) {
+                feeEl.innerHTML = `<span class="text-cyber-green font-bold">₹0 (1st Order Free!)</span>`;
+                totalEl.textContent = `₹${actualTotal}`;
+            } else {
+                feeEl.textContent = `+ ₹${regularFee}`;
+                totalEl.textContent = `₹${actualTotal}`;
+            }
+        };
+
+        window.addCustomToCart = function() {
+            const input = document.getElementById('custom-amount-input');
+            let val = parseInt(input.value) || 100;
+            if (val < 10) val = 10;
+            if (val > 5000) val = 5000;
+
+            const regularFee = calculateExtraFee(val);
+            const firstTime = isFirstTimeUser();
+            const fee = firstTime ? 0 : regularFee;
+            const total = val + fee;
+
+            const itemName = firstTime
+                ? `Redeem Code — ₹${val} (1st Order ₹0 fee)`
+                : `Redeem Code — ₹${val} (+₹${fee} fee)`;
+
+            cartList.push({
+                name: itemName,
+                price: total,
+                qty: 1
+            });
+            updateCartBadge();
+            showToast(`Added Custom Redeem Code (₹${total}) to your list!`);
+            openCartDrawer();
+        };
+
+        window.addPresetToCart = function(name, price) {
+            cartList.push({ name, price, qty: 1 });
+            updateCartBadge();
+            showToast(`Added ${name} to your list!`);
+            openCartDrawer();
+        };
+
+        window.openDirectSchoolCheckout = function() {
+            const input = document.getElementById('custom-amount-input');
+            let val = parseInt(input.value) || 100;
+            if (val < 10) val = 10;
+            if (val > 5000) val = 5000;
+
+            const regularFee = calculateExtraFee(val);
+            const firstTime = isFirstTimeUser();
+            const fee = firstTime ? 0 : regularFee;
+            const total = val + fee;
+
+            const itemName = firstTime
+                ? `Redeem Code — ₹${val} (1st Order ₹0 fee)`
+                : `Redeem Code — ₹${val} (+₹${fee} fee)`;
+
+            cartList = [{
+                name: itemName,
+                price: total,
+                qty: 1
+            }];
+            updateCartBadge();
+            openCartDrawer();
+        };
+
+        window.openCartDrawer = function() {
+            renderCartItems();
+            document.getElementById('cart-drawer').classList.remove('hidden');
+        };
+
+        window.closeCartDrawer = function() {
+            document.getElementById('cart-drawer').classList.add('hidden');
+        };
+
+        window.updateCartBadge = function() {
+            document.getElementById('cart-count').textContent = cartList.length;
+            renderCartItems();
+        };
+
+        window.renderCartItems = function() {
+            const container = document.getElementById('cart-items-list');
+            const totalEl = document.getElementById('drawer-total-amount');
+
+            if (cartList.length === 0) {
+                container.innerHTML = `<div class="text-center py-6 text-gray-500 text-xs font-mono">Your list is empty. Add items or custom amount.</div>`;
+                totalEl.textContent = '₹0';
+                return;
+            }
+
+            let html = '';
+            let grandTotal = 0;
+
+            cartList.forEach((item, index) => {
+                const itemTotal = item.price * item.qty;
+                grandTotal += itemTotal;
+                html += `
+                    <div class="p-3 rounded-xl bg-cyber-bg border border-cyber-border flex items-center justify-between">
+                        <div>
+                            <h4 class="text-xs font-bold text-white">${item.name}</h4>
+                            <span class="text-[11px] font-mono text-cyber-cyan">₹${itemTotal.toLocaleString()}</span>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        </button>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalEl.textContent = `₹${grandTotal.toLocaleString()}`;
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.removeFromCart = function(index) {
+            cartList.splice(index, 1);
+            updateCartBadge();
+        };
+
+        window.confirmSchoolPayment = function() {
+            const name = document.getElementById('student-name').value.trim();
+            const studentClass = document.getElementById('student-class').value.trim();
+            const rollNo = document.getElementById('student-roll').value.trim();
+            const section = document.getElementById('student-section').value.trim();
+
+            if(!name || !studentClass || !rollNo || !section) {
+                showToast("Please fill in Name, Class, Roll No, and Section completely.");
+                return;
+            }
+            if (!/^[a-zA-Z\s]+$/.test(name)) {
+                showToast("Full Name should only contain letters.");
+                return;
+            }
+            if (isNaN(studentClass) || parseInt(studentClass) <= 0) {
+                showToast("Class must be a valid integer number (e.g. 8).");
+                return;
+            }
+            if (isNaN(rollNo) || parseInt(rollNo) <= 0) {
+                showToast("Roll Number must be a valid integer number.");
+                return;
+            }
+            if (!/^[a-zA-Z]+$/.test(section)) {
+                showToast("Section should only contain text letters (e.g. A).");
+                return;
+            }
+            if(cartList.length === 0) {
+                showToast("Your list is empty.");
+                return;
+            }
+
+            const total = cartList.reduce((sum, item) => sum + (item.price * item.qty), 0);
+            const orderId = generateUniqueOrderId();
+            lastGeneratedCode = orderId;
+
+            const orderData = {
+                orderId,
+                studentName: name,
+                studentClass,
+                rollNo,
+                section,
+                items: [...cartList],
+                total,
+                status: 'Pending',
+                createdAt: Date.now(),
+                date: new Date().toLocaleDateString()
+            };
+
+            // Save permanently without limiting length and store full details immediately
+            if (!myLocalOrderIds.includes(orderId)) {
+                myLocalOrderIds.unshift(orderId);
+                localStorage.setItem('ss_rc_my_permanent_orders', JSON.stringify(myLocalOrderIds));
+            }
+            myLocalOrdersMap[orderId] = orderData;
+            localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
+
+            // Immediately update UI so subsequent orders switch to regular fees
+            renderPopularPackages();
+            handleAmountInput();
+
+            if (auth && db) {
+                signInAnonymously(auth).then(() => {
+                    addDoc(collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolOrders'), orderData).catch(err => console.log(err));
+                }).catch(err => console.log(err));
+            }
+
+            closeCartDrawer();
+            showReceiptModal(orderData);
+            cartList = [];
+            updateCartBadge();
+            document.getElementById('student-name').value = '';
+            document.getElementById('student-class').value = '';
+            document.getElementById('student-roll').value = '';
+            document.getElementById('student-section').value = '';
+        };
+
+        window.showReceiptModal = function(order) {
+            const modal = document.getElementById('receipt-modal');
+            const details = document.getElementById('receipt-details');
+
+            details.innerHTML = `
+                <div class="flex justify-between border-b border-cyber-border pb-1">
+                    <span class="text-gray-400">Order ID:</span>
+                    <span class="text-cyber-cyan font-bold">${order.orderId}</span>
+                </div>
+                <div class="flex justify-between border-b border-cyber-border pb-1">
+                    <span class="text-gray-400">Student:</span>
+                    <span class="text-white">${order.studentName}</span>
+                </div>
+                <div class="flex justify-between border-b border-cyber-border pb-1">
+                    <span class="text-gray-400">Class / Sec / Roll:</span>
+                    <span class="text-white">${order.studentClass}-${order.section} (Roll: ${order.rollNo})</span>
+                </div>
+                <div class="flex justify-between border-b border-cyber-border pb-1">
+                    <span class="text-gray-400">Redeem Code:</span>
+                    <span class="text-cyber-pink font-bold">Given at School after Cash</span>
+                </div>
+                <div class="flex justify-between pt-1">
+                    <span class="text-gray-400">Cash to Bring:</span>
+                    <span class="text-cyber-green font-bold">₹${order.total.toLocaleString()}</span>
+                </div>
+            `;
+            modal.classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeReceiptModal = function() {
+            document.getElementById('receipt-modal').classList.add('hidden');
+        };
+
+        window.copyReceiptCode = function() {
+            if(lastGeneratedCode) {
+                const dummy = document.createElement('textarea');
+                document.body.appendChild(dummy);
+                dummy.value = lastGeneratedCode;
+                dummy.select();
+                document.execCommand('copy');
+                document.body.removeChild(dummy);
+                showToast("Code copied to clipboard!");
+            }
+        };
+
+        window.showToast = function(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        };
+
+        function initApp() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+            renderPopularPackages();
+            handleAmountInput();
+        }
+
+        if (document.readyState === 'loading') {
+            window.addEventListener('DOMContentLoaded', initApp);
+        } else {
+            initApp();
+        }
+
+        window.addEventListener('load', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>
