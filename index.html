@@ -596,16 +596,18 @@
             db = getFirestore(app);
             messaging = getMessaging(app);
 
-            // Request permission and setup FCM
-            Notification.requestPermission().then((permission) => {
-                if (permission === 'granted') {
-                    getToken(messaging, { vapidKey: FIREBASE_MESSAGING_CLOUD_CODE }).then((currentToken) => {
-                        if (currentToken) {
-                            console.log("FCM Token:", currentToken);
-                        }
-                    }).catch((err) => {});
-                }
-            });
+            // Request browser notification permissions explicitly
+            if (window.Notification && Notification.permission !== 'granted') {
+                Notification.requestPermission().then((permission) => {
+                    if (permission === 'granted') {
+                        getToken(messaging, { vapidKey: FIREBASE_MESSAGING_CLOUD_CODE }).then((currentToken) => {
+                            if (currentToken) {
+                                console.log("FCM Token:", currentToken);
+                            }
+                        }).catch((err) => {});
+                    }
+                });
+            }
 
             onMessage(messaging, (payload) => {
                 if (payload && payload.notification) {
@@ -628,10 +630,8 @@
         let selectedNotificationIndices = new Set();
         let activeModalTimerInterval = null;
 
-        // Active discount percentage configured by admin (0% to 100%)
         let currentAdminDiscountPercent = 0;
 
-        // Custom ascending fee tiers array synced with admin configuration
         let customFeeTiersArray = [
             { min: 10, max: 99, fee: 0 },
             { min: 100, max: 199, fee: 10 },
@@ -657,7 +657,6 @@
             try {
                 await signInAnonymously(auth);
 
-                // Fee Tiers listener
                 const feeDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'feeTiersCustom');
                 onSnapshot(feeDocRef, (snap) => {
                     if (snap.exists() && snap.data().tiers) {
@@ -668,7 +667,6 @@
                     }
                 });
 
-                // Discount Config listener (Cloud messaging sync & discount update)
                 const discountDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'discountConfig');
                 onSnapshot(discountDocRef, (snap) => {
                     if (snap.exists()) {
@@ -680,7 +678,6 @@
                         renderPopularPackages();
                         handleAmountInput();
 
-                        // If discount is between 1% and 100% and has changed/newly added, trigger notification as requested
                         if (newPercent >= 1 && newPercent <= 100 && newPercent !== lastSeenDiscount) {
                             addNotification({
                                 id: `discount_notif_${Date.now()}`,
@@ -715,7 +712,6 @@
                     renderNoticesInMenu(activeNotices);
                     checkAndShowPopupNotice(activeNotices);
 
-                    // Check for notice updates to trigger cloud messaging notification
                     if (activeNotices.length > 0) {
                         const latest = activeNotices[0];
                         const lastNotifId = localStorage.getItem('ss_rc_last_notif_id');
@@ -752,7 +748,6 @@
             const status = (order.status || '').toLowerCase();
             const orderId = order.orderId;
 
-            // 1. Request Accepted notification (with cash payment instruction in short text)
             const acceptedKey = `notif_accepted_${orderId}`;
             if ((status.includes('accept') || status.includes('approv') || status.includes('complet')) && !localStorage.getItem(acceptedKey)) {
                 addNotification({
@@ -765,7 +760,6 @@
                 localStorage.setItem(acceptedKey, 'true');
             }
 
-            // 2. Cash Received triggered by admin -> Start Trust Timer & notify user ("Cash received")
             const cashKey = `notif_cash_${orderId}`;
             if (order.cashReceivedAt && !localStorage.getItem(cashKey)) {
                 addNotification({
@@ -781,7 +775,6 @@
                 activateTrustTimerBanner(order.cashReceivedAt);
             }
 
-            // 3. Redeem code sent by admin -> Notify user with "Code received ! Tap here to see the code"
             const codeKey = `notif_code_${orderId}`;
             if (order.redeemCode && !localStorage.getItem(codeKey)) {
                 addNotification({
@@ -802,6 +795,16 @@
             localStorage.setItem('ss_rc_my_notifications', JSON.stringify(myNotifications));
             updateNotificationBadges();
             showToast(notif.title);
+
+            // Trigger native browser notification banner so it pops up on the screen
+            if (window.Notification && Notification.permission === 'granted') {
+                try {
+                    new Notification(notif.title, {
+                        body: notif.message,
+                        icon: 'https://cdn-icons-png.flaticon.com/512/2921/2921822.png'
+                    });
+                } catch (e) {}
+            }
         }
 
         function updateNotificationBadges() {
@@ -926,12 +929,10 @@
             if (window.lucide) lucide.createIcons();
         }
 
-        // Open Notification Letter Modal with big bold letter, description, and trust timer. Clicking brings user to website home screen as requested.
         window.openNotificationLetter = function(idx) {
             const notif = myNotifications[idx];
             if (!notif) return;
 
-            // Mark as seen
             notif.seen = true;
             localStorage.setItem('ss_rc_my_notifications', JSON.stringify(myNotifications));
             updateNotificationBadges();
@@ -957,7 +958,6 @@
                 <p class="text-xs text-gray-300 leading-relaxed mt-2">${finalMsg}</p>
             `;
 
-            // Check if this notification has a trust timer or cash received start
             if (notif.trustStart || notif.title.includes('Cash Received')) {
                 trustBox.classList.remove('hidden');
                 const startTime = notif.trustStart || Date.now();
@@ -989,7 +989,6 @@
             modal.classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
             
-            // Bring user to home screen as requested when notification button is clicked
             switchPage('home');
         };
 
@@ -1594,6 +1593,11 @@
         window.removeFromCart = function(index) { cartList.splice(index, 1); updateCartBadge(); };
 
         window.confirmCheckoutPayment = function() {
+            // Request Notification Permission on checkout
+            if (window.Notification && Notification.permission !== 'granted') {
+                Notification.requestPermission();
+            }
+
             const name = document.getElementById('customer-name').value.trim();
             const locality = document.getElementById('customer-locality').value.trim();
             const profession = document.getElementById('customer-profession').value.trim();
@@ -1629,6 +1633,15 @@
 
             renderPopularPackages();
             handleAmountInput();
+
+            // Notify user of order submission
+            addNotification({
+                id: `placed_${orderId}`,
+                title: `Order Placed - ${orderId}`,
+                message: `Your order has been placed successfully! Total: ₹${total}`,
+                seen: false,
+                createdAt: Date.now()
+            });
 
             if (auth && db) {
                 signInAnonymously(auth).then(() => {
