@@ -608,31 +608,33 @@
             try { getAnalytics(app); } catch (e) {}
             auth = getAuth(app);
             db = getFirestore(app);
-            messaging = getMessaging(app);
-
-            if ('Notification' in window) {
-                Notification.requestPermission().then((permission) => {
-                    if (permission === 'granted') {
-                        getToken(messaging, { vapidKey: FIREBASE_MESSAGING_CLOUD_CODE }).then((currentToken) => {
-                            if (currentToken) {
-                                console.log("FCM Token:", currentToken);
-                            }
-                        }).catch((err) => {});
-                    }
-                });
-            }
-
-            onMessage(messaging, (payload) => {
-                if (payload && payload.notification) {
-                    addNotification({
-                        id: `fcm_${Date.now()}`,
-                        title: payload.notification.title || 'NOTICE',
-                        message: payload.notification.body || 'Tap to see the notice',
-                        seen: false,
-                        createdAt: Date.now()
+            
+            try {
+                messaging = getMessaging(app);
+                if ('Notification' in window) {
+                    Notification.requestPermission().then((permission) => {
+                        if (permission === 'granted') {
+                            getToken(messaging, { vapidKey: FIREBASE_MESSAGING_CLOUD_CODE }).then((currentToken) => {
+                                if (currentToken) {
+                                    console.log("FCM Token:", currentToken);
+                                }
+                            }).catch((err) => {});
+                        }
                     });
                 }
-            });
+
+                onMessage(messaging, (payload) => {
+                    if (payload && payload.notification) {
+                        addNotification({
+                            id: `fcm_${Date.now()}`,
+                            title: payload.notification.title || 'NOTICE',
+                            message: payload.notification.body || 'Tap to see the notice',
+                            seen: false,
+                            createdAt: Date.now()
+                        });
+                    }
+                });
+            } catch (e) {}
         } catch (err) {}
 
         let cartList = [];
