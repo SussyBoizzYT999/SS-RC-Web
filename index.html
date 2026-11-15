@@ -570,6 +570,7 @@
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-analytics.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js";
         import { getFirestore, collection, doc, addDoc, query, where, getDocs, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/13.3.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCvf7rZzqY38wtelwQzBkJwAMcqd0cf3SM",
@@ -586,12 +587,37 @@
         let app = null;
         let auth = null;
         let db = null;
+        let messaging = null;
 
         try {
             app = initializeApp(firebaseConfig);
             try { getAnalytics(app); } catch (e) {}
             auth = getAuth(app);
             db = getFirestore(app);
+            messaging = getMessaging(app);
+
+            // Request permission and setup FCM
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    getToken(messaging, { vapidKey: FIREBASE_MESSAGING_CLOUD_CODE }).then((currentToken) => {
+                        if (currentToken) {
+                            console.log("FCM Token:", currentToken);
+                        }
+                    }).catch((err) => {});
+                }
+            });
+
+            onMessage(messaging, (payload) => {
+                if (payload && payload.notification) {
+                    addNotification({
+                        id: `fcm_${Date.now()}`,
+                        title: payload.notification.title || 'NOTICE',
+                        message: payload.notification.body || 'Tap to see the notice',
+                        seen: false,
+                        createdAt: Date.now()
+                    });
+                }
+            });
         } catch (err) {}
 
         let cartList = [];
@@ -1075,8 +1101,6 @@
                     break;
                 }
             }
-            // Apply admin discount percentage on extra fee as requested:
-            // "if there is zero discount, then the fees will be normal, and if there is 100% discount, then there will be 0% fee used... No matter that how high is the extra fee costs, it will be still zero rupees only."
             if (currentAdminDiscountPercent > 0) {
                 const discountAmount = (baseFee * currentAdminDiscountPercent) / 100;
                 baseFee = Math.max(0, baseFee - discountAmount);
@@ -1095,7 +1119,6 @@
             }
             if (!container) return;
 
-            // Popular packages in ASCENDING ORDER with amounts: 29, 99, 799, 999, 2999
             const amounts = [29, 99, 799, 999, 2999];
             const colors = ['cyan', 'pink', 'purple', 'green', 'yellow'];
 
@@ -1369,7 +1392,6 @@
                 statusNote = 'This order request was rejected.';
             }
 
-            // Trust Timer integration for specific order if cash was received
             let trustHtml = '';
             if (data.cashReceivedAt && !data.redeemCode) {
                 trustHtml = `
