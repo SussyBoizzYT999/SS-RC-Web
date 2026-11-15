@@ -752,26 +752,26 @@
             const status = (order.status || '').toLowerCase();
             const orderId = order.orderId;
 
-            // 1. Request Accepted notification
+            // 1. Request Accepted notification (with cash payment instruction in short text)
             const acceptedKey = `notif_accepted_${orderId}`;
             if ((status.includes('accept') || status.includes('approv') || status.includes('complet')) && !localStorage.getItem(acceptedKey)) {
                 addNotification({
                     id: `accepted_${orderId}_${Date.now()}`,
-                    title: `Request Accepted - ${orderId}`,
-                    message: `Your request has been accepted! Please bring the payment.`,
+                    title: `Order Accepted - ${orderId}`,
+                    message: `Order Accepted! Bring the cash or pay online.`,
                     seen: false,
                     createdAt: Date.now()
                 });
                 localStorage.setItem(acceptedKey, 'true');
             }
 
-            // 2. Cash Received triggered by admin -> Start Trust Timer & notify user
+            // 2. Cash Received triggered by admin -> Start Trust Timer & notify user ("Cash received")
             const cashKey = `notif_cash_${orderId}`;
             if (order.cashReceivedAt && !localStorage.getItem(cashKey)) {
                 addNotification({
                     id: `cash_${orderId}_${Date.now()}`,
-                    title: `Payment Received Confirmed - ${orderId}`,
-                    message: `Your payment has been safely verified and received! We deeply appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.`,
+                    title: `Cash Received - ${orderId}`,
+                    message: `Cash Received. Within 24 hours you will receive a message over on your screen, or head to the official website.`,
                     seen: false,
                     createdAt: Date.now(),
                     trustStart: order.cashReceivedAt
@@ -781,13 +781,13 @@
                 activateTrustTimerBanner(order.cashReceivedAt);
             }
 
-            // 3. Redeem code sent by admin -> Notify user with code(s)
+            // 3. Redeem code sent by admin -> Notify user with "Code received ! Tap here to see the code"
             const codeKey = `notif_code_${orderId}`;
             if (order.redeemCode && !localStorage.getItem(codeKey)) {
                 addNotification({
                     id: `code_${orderId}_${Date.now()}`,
-                    title: `Redeem Code(s) Dispatched - ${orderId}`,
-                    message: `Your redeem code(s) are ready and verified. Thank you for your patience!`,
+                    title: `Code Received !`,
+                    message: `Tap here to see the code`,
                     code: order.redeemCode,
                     seen: false,
                     createdAt: Date.now()
@@ -944,11 +944,21 @@
             const codeBox = document.getElementById('modal-code-box');
 
             titleEl.textContent = notif.title;
-            const displayMessage = notif.fullNoticeText ? `${notif.message}<br><br>${notif.fullNoticeText}` : notif.message;
-            bodyEl.innerHTML = `<p class="text-base font-bold text-white leading-relaxed">${displayMessage}</p>`;
+            let displayMessage = notif.message;
+            if (notif.code) {
+                displayMessage = "Your redeem code is ready and verified. Thank you for your patience!";
+            } else if (notif.trustStart || notif.title.includes('Cash Received')) {
+                displayMessage = "Your payment has been safely verified and received! We deeply appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.";
+            }
+
+            const finalMsg = notif.fullNoticeText ? `${displayMessage}<br><br>${notif.fullNoticeText}` : displayMessage;
+            bodyEl.innerHTML = `
+                <p class="text-base font-bold text-white leading-relaxed">Your redeem code(s) are ready and verified. Thank you for your patience!</p>
+                <p class="text-xs text-gray-300 leading-relaxed mt-2">${finalMsg}</p>
+            `;
 
             // Check if this notification has a trust timer or cash received start
-            if (notif.trustStart || notif.title.includes('Payment Received')) {
+            if (notif.trustStart || notif.title.includes('Cash Received')) {
                 trustBox.classList.remove('hidden');
                 const startTime = notif.trustStart || Date.now();
                 startModalTrustTimer(startTime);
