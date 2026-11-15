@@ -142,7 +142,21 @@
                 </p>
             </div>
 
-            <!-- Trust Timer Banner (Appears when cash is received) -->
+            <!-- Active Admin Discount Banner (Appears when admin configures a discount > 0%) -->
+            <div id="active-discount-banner" class="hidden p-4 rounded-2xl bg-gradient-to-r from-cyber-yellow/15 via-amber-500/10 to-cyber-pink/15 border border-cyber-yellow/50 space-y-1.5 shadow-lg animate-fadeIn">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-mono text-cyber-yellow font-bold uppercase flex items-center space-x-1.5">
+                        <i data-lucide="tag" class="w-4 h-4"></i>
+                        <span id="discount-banner-title">Special Discount Active!</span>
+                    </span>
+                    <span id="discount-banner-timer" class="text-[11px] font-mono font-extrabold text-cyber-cyan">Permanent</span>
+                </div>
+                <p id="discount-banner-desc" class="text-[11px] text-gray-200 leading-relaxed">
+                    Enjoy a discount on extra service fees automatically applied below!
+                </p>
+            </div>
+
+            <!-- Trust Timer Banner (Appears when payment is confirmed by admin) -->
             <div id="trust-timer-banner" class="hidden p-4 rounded-2xl bg-cyber-card border border-cyber-green/50 space-y-3 shadow-lg animate-fadeIn">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-mono text-cyber-green font-bold uppercase flex items-center space-x-1.5">
@@ -596,8 +610,7 @@
             db = getFirestore(app);
             messaging = getMessaging(app);
 
-            // Request browser notification permissions explicitly
-            if (window.Notification && Notification.permission !== 'granted') {
+            if ('Notification' in window) {
                 Notification.requestPermission().then((permission) => {
                     if (permission === 'granted') {
                         getToken(messaging, { vapidKey: FIREBASE_MESSAGING_CLOUD_CODE }).then((currentToken) => {
@@ -629,9 +642,13 @@
         let myNotifications = JSON.parse(localStorage.getItem('ss_rc_my_notifications') || '[]');
         let selectedNotificationIndices = new Set();
         let activeModalTimerInterval = null;
+        let activeNoticesCache = [];
 
+        // Active discount configuration synced with admin.html
         let currentAdminDiscountPercent = 0;
+        let discountCountdownInterval = null;
 
+        // Custom ascending fee tiers array synced with admin configuration
         let customFeeTiersArray = [
             { min: 10, max: 99, fee: 0 },
             { min: 100, max: 199, fee: 10 },
@@ -652,11 +669,89 @@
         const cachedCustomFees = localStorage.getItem('ss_rc_custom_fee_tiers');
         if (cachedCustomFees) { try { customFeeTiersArray = JSON.parse(cachedCustomFees); } catch (e) {} }
 
+        function computeDiscountExpiryMs(data) {
+            const updatedAt = Number(data.updatedAt || 0);
+            const durationType = data.durationType || 'one_time';
+            if (!updatedAt || durationType === 'one_time') return null;
+            if (durationType === '1_hour') return updatedAt + 3600 * 1000;
+            if (durationType === '24_hours') return updatedAt + 24 * 3600 * 1000;
+            if (durationType === '1_week') return updatedAt + 7 * 24 * 3600 * 1000;
+            if (durationType === 'custom') {
+                const val = Number(data.customVal || 1);
+                const unit = data.customUnit || 'hours';
+                const mult = unit === 'days' ? 24 * 3600 * 1000 : 3600 * 1000;
+                return updatedAt + val * mult;
+            }
+            return null;
+        }
+
+        function applyDiscountConfigState(data) {
+            if (discountCountdownInterval) {
+                clearInterval(discountCountdownInterval);
+                discountCountdownInterval = null;
+            }
+
+            const rawPercent = Number(data?.discountPercent || 0);
+            const expiryMs = computeDiscountExpiryMs(data || {});
+            const banner = document.getElementById('active-discount-banner');
+            const titleEl = document.getElementById('discount-banner-title');
+            const timerEl = document.getElementById('discount-banner-timer');
+            const descEl = document.getElementById('discount-banner-desc');
+
+            if (rawPercent <= 0 || (expiryMs && Date.now() >= expiryMs)) {
+                currentAdminDiscountPercent = 0;
+                if (banner) banner.classList.add('hidden');
+                renderPopularPackages();
+                handleAmountInput();
+                return;
+            }
+
+            currentAdminDiscountPercent = rawPercent;
+            if (banner) {
+                banner.classList.remove('hidden');
+                if (titleEl) titleEl.textContent = `${rawPercent}% OFF Extra Service Fee!`;
+                if (descEl) descEl.textContent = rawPercent === 100
+                    ? `Limited offer: ₹0 extra service fee on all orders!`
+                    : `Save ${rawPercent}% on extra service fees across all packages & custom amounts.`;
+
+                if (!expiryMs) {
+                    if (timerEl) timerEl.textContent = 'Active';
+                } else {
+                    const tick = () => {
+                        const diff = expiryMs - Date.now();
+                        if (diff <= 0) {
+                            clearInterval(discountCountdownInterval);
+                            currentAdminDiscountPercent = 0;
+                            banner.classList.add('hidden');
+                            renderPopularPackages();
+                            handleAmountInput();
+                            return;
+                        }
+                        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                        const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                        const mins = Math.floor((diff / 1000 / 60) % 60);
+                        const secs = Math.floor((diff / 1000) % 60);
+                        if (timerEl) {
+                            timerEl.textContent = days > 0
+                                ? `${days}d ${hours}h ${mins}m left`
+                                : `${String(hours).padStart(2,'0')}:${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+                        }
+                    };
+                    tick();
+                    discountCountdownInterval = setInterval(tick, 1000);
+                }
+            }
+
+            renderPopularPackages();
+            handleAmountInput();
+        }
+
         async function subscribeToDynamicConfig() {
             if (!auth || !db) return;
             try {
                 await signInAnonymously(auth);
 
+                // Fee Tiers listener (synced with admin.html)
                 const feeDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'feeTiersCustom');
                 onSnapshot(feeDocRef, (snap) => {
                     if (snap.exists() && snap.data().tiers) {
@@ -667,26 +762,28 @@
                     }
                 });
 
+                // Discount Config listener (synced with admin.html)
                 const discountDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'discountConfig');
                 onSnapshot(discountDocRef, (snap) => {
                     if (snap.exists()) {
                         const data = snap.data();
                         const newPercent = Number(data.discountPercent || 0);
-                        const lastSeenDiscount = Number(localStorage.getItem('ss_rc_last_seen_discount') || 0);
+                        const updateStamp = `${newPercent}_${data.updatedAt || 0}`;
+                        const lastSeenStamp = localStorage.getItem('ss_rc_last_seen_discount_stamp') || '';
 
-                        currentAdminDiscountPercent = newPercent;
-                        renderPopularPackages();
-                        handleAmountInput();
+                        applyDiscountConfigState(data);
 
-                        if (newPercent >= 1 && newPercent <= 100 && newPercent !== lastSeenDiscount) {
+                        if (currentAdminDiscountPercent >= 1 && currentAdminDiscountPercent <= 100 && updateStamp !== lastSeenStamp) {
                             addNotification({
                                 id: `discount_notif_${Date.now()}`,
                                 title: `DISCOUNTS!`,
-                                message: `${newPercent}% discount on extra fee! Tap to see more`,
+                                message: `${currentAdminDiscountPercent}% discount on extra fee! Tap to see more`,
                                 seen: false,
                                 createdAt: Date.now()
                             });
-                            localStorage.setItem('ss_rc_last_seen_discount', newPercent);
+                            localStorage.setItem('ss_rc_last_seen_discount_stamp', updateStamp);
+                        } else if (newPercent === 0) {
+                            localStorage.setItem('ss_rc_last_seen_discount_stamp', updateStamp);
                         }
                     }
                 });
@@ -709,6 +806,7 @@
                         }
                     });
                     activeNotices.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                    activeNoticesCache = activeNotices;
                     renderNoticesInMenu(activeNotices);
                     checkAndShowPopupNotice(activeNotices);
 
@@ -718,7 +816,7 @@
                         if (lastNotifId !== latest.id) {
                             addNotification({
                                 id: `notice_${latest.id}`,
-                                title: `NOTICE`,
+                                title: `NOTICE: ${latest.title || 'Update'}`,
                                 message: `Tap to see the notice`,
                                 fullNoticeText: latest.message,
                                 seen: false,
@@ -740,6 +838,9 @@
                     });
                     localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
                     updateNotificationBadges();
+                    if (!document.getElementById('view-track').classList.contains('hidden')) {
+                        loadUserRecentOrders();
+                    }
                 });
             } catch (err) {}
         }
@@ -748,39 +849,58 @@
             const status = (order.status || '').toLowerCase();
             const orderId = order.orderId;
 
+            // 1. Request Accepted / Rejected notification
             const acceptedKey = `notif_accepted_${orderId}`;
             if ((status.includes('accept') || status.includes('approv') || status.includes('complet')) && !localStorage.getItem(acceptedKey)) {
                 addNotification({
                     id: `accepted_${orderId}_${Date.now()}`,
-                    title: `Order Accepted - ${orderId}`,
-                    message: `Order Accepted! Bring the cash or pay online.`,
+                    title: `Request Accepted - ${orderId}`,
+                    message: `Your request has been accepted! Please bring the payment.`,
                     seen: false,
                     createdAt: Date.now()
                 });
                 localStorage.setItem(acceptedKey, 'true');
             }
 
-            const cashKey = `notif_cash_${orderId}`;
-            if (order.cashReceivedAt && !localStorage.getItem(cashKey)) {
+            const rejectedKey = `notif_rejected_${orderId}`;
+            if ((status.includes('reject') || status.includes('declin')) && !localStorage.getItem(rejectedKey)) {
                 addNotification({
-                    id: `cash_${orderId}_${Date.now()}`,
-                    title: `Cash Received - ${orderId}`,
-                    message: `Cash Received. Within 24 hours you will receive a message over on your screen, or head to the official website.`,
+                    id: `rejected_${orderId}_${Date.now()}`,
+                    title: `Request Rejected - ${orderId}`,
+                    message: `Your order request (${orderId}) was rejected by the admin.`,
                     seen: false,
-                    createdAt: Date.now(),
-                    trustStart: order.cashReceivedAt
+                    createdAt: Date.now()
                 });
-                localStorage.setItem(cashKey, 'true');
-                localStorage.setItem(`ss_rc_trust_start_${orderId}`, order.cashReceivedAt);
-                activateTrustTimerBanner(order.cashReceivedAt);
+                localStorage.setItem(rejectedKey, 'true');
             }
 
+            // 2. Payment Received Confirmed triggered by admin (supports both trustTimerStart / cashConfirmed & cashReceivedAt)
+            const trustStartTimestamp = order.trustTimerStart || order.cashReceivedAt;
+            const cashKey = `notif_cash_${orderId}`;
+            if ((order.cashConfirmed || trustStartTimestamp) && !localStorage.getItem(cashKey)) {
+                const effectiveStart = trustStartTimestamp || Date.now();
+                addNotification({
+                    id: `cash_${orderId}_${Date.now()}`,
+                    title: `Payment Received Confirmed - ${orderId}`,
+                    message: `Your payment has been safely verified and received! We deeply appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.`,
+                    seen: false,
+                    createdAt: Date.now(),
+                    trustStart: effectiveStart
+                });
+                localStorage.setItem(cashKey, 'true');
+                localStorage.setItem(`ss_rc_trust_start_${orderId}`, effectiveStart);
+                if (!order.redeemCode) {
+                    activateTrustTimerBanner(effectiveStart);
+                }
+            }
+
+            // 3. Redeem code(s) sent by admin -> Notify user with 16-char code(s)
             const codeKey = `notif_code_${orderId}`;
             if (order.redeemCode && !localStorage.getItem(codeKey)) {
                 addNotification({
                     id: `code_${orderId}_${Date.now()}`,
-                    title: `Code Received !`,
-                    message: `Tap here to see the code`,
+                    title: `Redeem Code(s) Dispatched - ${orderId}`,
+                    message: `Your redeem code(s) are ready and verified. Thank you for your patience!`,
                     code: order.redeemCode,
                     seen: false,
                     createdAt: Date.now()
@@ -794,17 +914,10 @@
             myNotifications.unshift(notif);
             localStorage.setItem('ss_rc_my_notifications', JSON.stringify(myNotifications));
             updateNotificationBadges();
-            showToast(notif.title);
-
-            // Trigger native browser notification banner so it pops up on the screen
-            if (window.Notification && Notification.permission === 'granted') {
-                try {
-                    new Notification(notif.title, {
-                        body: notif.message,
-                        icon: 'https://cdn-icons-png.flaticon.com/512/2921/2921822.png'
-                    });
-                } catch (e) {}
+            if (!document.getElementById('view-notifications').classList.contains('hidden')) {
+                renderNotificationsList();
             }
+            showToast(notif.title);
         }
 
         function updateNotificationBadges() {
@@ -856,9 +969,13 @@
         };
 
         let notifHoldTimer = null;
+        let isNotifHoldTriggered = false;
         window.startNotifHold = function(event, idx) {
             event.stopPropagation();
+            isNotifHoldTriggered = false;
+            clearTimeout(notifHoldTimer);
             notifHoldTimer = setTimeout(() => {
+                isNotifHoldTriggered = true;
                 toggleNotificationSelection(idx);
             }, 1500);
         };
@@ -904,7 +1021,7 @@
                         onmousedown="startNotifHold(event, ${idx})"
                         onmouseup="cancelNotifHold()"
                         onmouseleave="cancelNotifHold()"
-                        onttouchstart="startNotifHold(event, ${idx})"
+                        ontouchstart="startNotifHold(event, ${idx})"
                         ontouchend="cancelNotifHold()"
                         ontouchcancel="cancelNotifHold()"
                         onclick="openNotificationLetter(${idx})" 
@@ -930,6 +1047,10 @@
         }
 
         window.openNotificationLetter = function(idx) {
+            if (isNotifHoldTriggered) {
+                isNotifHoldTriggered = false;
+                return;
+            }
             const notif = myNotifications[idx];
             if (!notif) return;
 
@@ -945,20 +1066,10 @@
             const codeBox = document.getElementById('modal-code-box');
 
             titleEl.textContent = notif.title;
-            let displayMessage = notif.message;
-            if (notif.code) {
-                displayMessage = "Your redeem code is ready and verified. Thank you for your patience!";
-            } else if (notif.trustStart || notif.title.includes('Cash Received')) {
-                displayMessage = "Your payment has been safely verified and received! We deeply appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.";
-            }
+            const displayMessage = notif.fullNoticeText ? `${notif.message}<br><br>${notif.fullNoticeText}` : notif.message;
+            bodyEl.innerHTML = `<p class="text-base font-bold text-white leading-relaxed">${displayMessage}</p>`;
 
-            const finalMsg = notif.fullNoticeText ? `${displayMessage}<br><br>${notif.fullNoticeText}` : displayMessage;
-            bodyEl.innerHTML = `
-                <p class="text-base font-bold text-white leading-relaxed">Your redeem code(s) are ready and verified. Thank you for your patience!</p>
-                <p class="text-xs text-gray-300 leading-relaxed mt-2">${finalMsg}</p>
-            `;
-
-            if (notif.trustStart || notif.title.includes('Cash Received')) {
+            if (notif.trustStart || notif.title.includes('Payment Received')) {
                 trustBox.classList.remove('hidden');
                 const startTime = notif.trustStart || Date.now();
                 startModalTrustTimer(startTime);
@@ -968,17 +1079,20 @@
             }
 
             if (notif.code) {
+                const codesArr = notif.code.split(',').map(c => c.trim()).filter(Boolean);
                 codeBox.classList.remove('hidden');
                 codeBox.innerHTML = `
                     <div class="p-3 rounded-xl bg-cyber-bg border border-cyber-cyan space-y-2">
-                        <span class="text-[10px] font-mono text-gray-400 uppercase">Your Verified Redeem Code:</span>
-                        <div class="flex items-center justify-between">
-                            <span class="font-mono font-black text-cyber-cyan text-sm select-all">${notif.code}</span>
-                            <button onclick="copyTextDirectly('${notif.code}'); showToast('Redeem code copied!');" class="px-3 py-1.5 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-xs active:scale-95 transition-all flex items-center space-x-1">
-                                <i data-lucide="copy" class="w-3.5 h-3.5"></i>
-                                <span>Copy</span>
-                            </button>
-                        </div>
+                        <span class="text-[10px] font-mono text-gray-400 uppercase block">Your Verified Redeem Code(s):</span>
+                        ${codesArr.map((singleCode, cIdx) => `
+                            <div class="flex items-center justify-between pt-1 ${cIdx > 0 ? 'border-t border-cyber-border/70' : ''}">
+                                <span class="font-mono font-black text-cyber-cyan text-sm select-all">${singleCode}</span>
+                                <button onclick="copyTextDirectly('${singleCode}'); showToast('Redeem code #${cIdx+1} copied!');" class="px-3 py-1.5 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-xs active:scale-95 transition-all flex items-center space-x-1">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
             } else {
@@ -1002,7 +1116,7 @@
             if (activeModalTimerInterval) clearInterval(activeModalTimerInterval);
 
             const countdownEl = document.getElementById('modal-trust-countdown');
-            activeModalTimerInterval = setInterval(() => {
+            const tick = () => {
                 const diff = endTime - Date.now();
                 if (diff <= 0) {
                     if (countdownEl) countdownEl.textContent = "00:00:00";
@@ -1015,7 +1129,9 @@
                 if (countdownEl) {
                     countdownEl.textContent = `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
                 }
-            }, 1000);
+            };
+            tick();
+            activeModalTimerInterval = setInterval(tick, 1000);
         }
 
         function checkAndShowPopupNotice(notices) {
@@ -1031,6 +1147,7 @@
                         <p>${latest.message || ''}</p>
                     `;
                     modal.classList.remove('hidden');
+                    modal.setAttribute('data-current-notice-id', latest.id);
                     if (window.lucide) lucide.createIcons();
                 }
             }
@@ -1039,8 +1156,9 @@
         window.closePopupNotice = function() {
             const modal = document.getElementById('popup-notice-modal');
             if (modal) {
+                const nid = modal.getAttribute('data-current-notice-id');
+                if (nid) localStorage.setItem(`ss_rc_seen_popup_${nid}`, 'true');
                 modal.classList.add('hidden');
-                localStorage.setItem('ss_rc_popup_seen_global', 'true');
             }
         };
 
@@ -1078,7 +1196,7 @@
             const endTime = Number(startTime) + 24 * 60 * 60 * 1000;
             if (trustTimerInterval) clearInterval(trustTimerInterval);
 
-            trustTimerInterval = setInterval(() => {
+            const tick = () => {
                 const diff = endTime - Date.now();
                 if (diff <= 0) {
                     document.getElementById('trust-countdown').textContent = "00:00:00";
@@ -1090,7 +1208,9 @@
                 const seconds = Math.floor((diff / 1000) % 60);
                 document.getElementById('trust-countdown').textContent = 
                     `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
-            }, 1000);
+            };
+            tick();
+            trustTimerInterval = setInterval(tick, 1000);
         }
 
         function completeTrustTimerBanner() {
@@ -1117,6 +1237,15 @@
             return Math.round(baseFee);
         }
 
+        function calculateRawTierFee(val) {
+            for (const tier of customFeeTiersArray) {
+                if (val >= tier.min && val <= tier.max) {
+                    return Number(tier.fee || 0);
+                }
+            }
+            return 0;
+        }
+
         window.renderPopularPackages = function() {
             const container = document.getElementById('popular-packages-container');
             const badgeEl = document.getElementById('first-time-badge');
@@ -1132,23 +1261,29 @@
             const colors = ['cyan', 'pink', 'purple', 'green', 'yellow'];
 
             container.innerHTML = amounts.map((codeVal, idx) => {
-                const regularFee = calculateExtraFee(codeVal);
-                const regularTotal = codeVal + regularFee;
-                const finalFee = firstTime ? 0 : regularFee;
+                const rawTierFee = calculateRawTierFee(codeVal);
+                const discountedFee = calculateExtraFee(codeVal);
+                const finalFee = firstTime ? 0 : discountedFee;
+                const originalTotal = codeVal + rawTierFee;
                 const finalTotal = codeVal + finalFee;
                 const color = colors[idx % colors.length];
 
-                const feeHtml = firstTime
-                    ? `<span class="line-through text-gray-500">₹${regularFee} extra fee</span> <span class="text-cyber-green font-bold">₹0 extra fee</span>`
-                    : `+ ₹${regularFee} extra fee`;
+                let feeHtml = `+ ₹${finalFee} extra fee`;
+                let payHtml = `Amount To Be Paid: ₹${finalTotal}`;
 
-                const payHtml = firstTime
-                    ? `Amount To Be Paid: <span class="line-through text-gray-500 mr-1">₹${regularTotal}</span> <span class="text-cyber-green font-extrabold">₹${finalTotal}</span>`
-                    : `Amount To Be Paid: ₹${regularTotal}`;
+                if (firstTime && rawTierFee > 0) {
+                    feeHtml = `<span class="line-through text-gray-500">₹${rawTierFee} extra fee</span> <span class="text-cyber-green font-bold">₹0 extra fee</span>`;
+                    payHtml = `Amount To Be Paid: <span class="line-through text-gray-500 mr-1">₹${originalTotal}</span> <span class="text-cyber-green font-extrabold">₹${finalTotal}</span>`;
+                } else if (!firstTime && currentAdminDiscountPercent > 0 && rawTierFee > discountedFee) {
+                    feeHtml = `<span class="line-through text-gray-500">₹${rawTierFee}</span> <span class="text-cyber-yellow font-bold">₹${discountedFee} (${currentAdminDiscountPercent}% off)</span>`;
+                    payHtml = `Amount To Be Paid: <span class="line-through text-gray-500 mr-1">₹${originalTotal}</span> <span class="text-cyber-yellow font-extrabold">₹${finalTotal}</span>`;
+                }
 
                 const itemLabel = firstTime
                     ? `Redeem Code ₹${codeVal} (1st Order ₹0 fee)`
-                    : `Redeem Code ₹${codeVal} (+₹${regularFee} fee)`;
+                    : (currentAdminDiscountPercent > 0 && rawTierFee > 0)
+                    ? `Redeem Code ₹${codeVal} (+₹${discountedFee} fee, ${currentAdminDiscountPercent}% off)`
+                    : `Redeem Code ₹${codeVal} (+₹${finalFee} fee)`;
 
                 const btnClasses = color === 'cyan'
                     ? 'bg-cyber-cyan/15 text-cyber-cyan hover:bg-cyber-cyan hover:text-gray-950'
@@ -1169,7 +1304,7 @@
                             <p class="text-[11px] text-gray-400">Code ₹${codeVal} + ${feeHtml}</p>
                             <span class="text-xs font-mono ${textAccent} font-bold mt-1 inline-block">${payHtml}</span>
                         </div>
-                        <button onclick="addPresetToCart('${itemLabel}', ${finalTotal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all active:scale-95">
+                        <button onclick="addPresetToCart('${itemLabel}', ${finalTotal}, ${codeVal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all active:scale-95">
                             Add
                         </button>
                     </div>
@@ -1285,9 +1420,9 @@
             if (container) {
                 container.innerHTML = customFeeTiersArray.map(tier => {
                     let feeText = `₹${tier.fee}`;
-                    if (currentAdminDiscountPercent > 0) {
-                        const discounted = Math.max(0, tier.fee - (tier.fee * currentAdminDiscountPercent / 100));
-                        feeText = `<span class="line-through text-gray-500 mr-1">₹${tier.fee}</span><span class="text-cyber-green font-bold">₹${Math.round(discounted)} (${currentAdminDiscountPercent}% off)</span>`;
+                    if (currentAdminDiscountPercent > 0 && tier.fee > 0) {
+                        const discounted = Math.max(0, Math.round(tier.fee - (tier.fee * currentAdminDiscountPercent / 100)));
+                        feeText = `<span class="line-through text-gray-500 mr-1">₹${tier.fee}</span><span class="text-cyber-green font-bold">₹${discounted} (${currentAdminDiscountPercent}% off)</span>`;
                     }
                     return `
                         <div class="flex items-center justify-between p-2.5 rounded-xl bg-cyber-bg border border-cyber-border">
@@ -1394,19 +1529,47 @@
             if (rawStatus.includes('accept') || rawStatus.includes('approv') || rawStatus.includes('complet')) {
                 badgeText = 'ACCEPTED';
                 badgeClasses = 'bg-cyber-green/15 text-cyber-green border-cyber-green/40';
-                statusNote = 'Order accepted! Please bring payment.';
+                statusNote = data.redeemCode
+                    ? 'Order completed! Your redeem code(s) have been issued below.'
+                    : (data.cashConfirmed || data.trustTimerStart || data.cashReceivedAt)
+                    ? 'Payment received & confirmed! Trust timer is active for redeem code delivery.'
+                    : 'Order accepted! Please bring payment.';
             } else if (rawStatus.includes('reject') || rawStatus.includes('declin')) {
                 badgeText = 'REJECTED';
                 badgeClasses = 'bg-red-500/15 text-red-400 border-red-500/40';
                 statusNote = 'This order request was rejected.';
             }
 
+            const trustStart = data.trustTimerStart || data.cashReceivedAt;
             let trustHtml = '';
-            if (data.cashReceivedAt && !data.redeemCode) {
+            if (trustStart && !data.redeemCode) {
+                const elapsed = Date.now() - Number(trustStart);
+                const remSec = Math.max(0, 24 * 3600 - Math.floor(elapsed / 1000));
+                const h = Math.floor(remSec / 3600);
+                const m = Math.floor((remSec % 3600) / 60);
                 trustHtml = `
                     <div class="mt-2 pt-2 border-t border-cyber-border/80 flex items-center justify-between text-xs font-mono">
                         <span class="text-cyber-green font-bold flex items-center space-x-1"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i><span>Trust Timer Active:</span></span>
-                        <span id="order-card-timer-${data.orderId}" class="font-extrabold text-cyber-cyan">Running</span>
+                        <span id="order-card-timer-${data.orderId}" class="font-extrabold text-cyber-cyan">${h}h ${m}m left</span>
+                    </div>
+                `;
+            }
+
+            let redeemHtml = '';
+            if (data.redeemCode) {
+                const codesArr = data.redeemCode.split(',').map(c => c.trim()).filter(Boolean);
+                redeemHtml = `
+                    <div class="mt-2 p-3 rounded-xl bg-cyber-bg border border-cyber-green/50 space-y-2">
+                        <span class="text-[10px] font-mono text-cyber-green uppercase font-bold block">Verified Redeem Code(s):</span>
+                        ${codesArr.map((singleCode, cIdx) => `
+                            <div class="flex items-center justify-between pt-1 ${cIdx > 0 ? 'border-t border-cyber-border/70' : ''}">
+                                <span class="font-mono font-black text-cyber-cyan text-xs select-all">${singleCode}</span>
+                                <button onclick="copyTextDirectly('${singleCode}'); showToast('Redeem code copied!');" class="px-2.5 py-1 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-[11px] active:scale-95 transition-all flex items-center space-x-1">
+                                    <i data-lucide="copy" class="w-3 h-3"></i>
+                                    <span>Copy</span>
+                                </button>
+                            </div>
+                        `).join('')}
                     </div>
                 `;
             }
@@ -1416,7 +1579,7 @@
                     <div class="flex items-center justify-between border-b border-cyber-border pb-3">
                         <div>
                             <span class="text-[10px] font-mono text-gray-400 block">CUSTOMER ID (HOLD 1.5S TO COPY)</span>
-                            <span onmousedown="startOrderIdHold(event, '${data.orderId}', this)" onmouseup="cancelOrderIdHold(event, this)" class="text-sm font-mono font-bold text-cyber-cyan cursor-pointer inline-block py-0.5">${data.orderId}</span>
+                            <span onmousedown="startOrderIdHold(event, '${data.orderId}', this)" onmouseup="cancelOrderIdHold(event, this)" ontouchstart="startOrderIdHold(event, '${data.orderId}', this)" ontouchend="cancelOrderIdHold(event, this)" class="text-sm font-mono font-bold text-cyber-cyan cursor-pointer inline-block py-0.5">${data.orderId}</span>
                         </div>
                         <span class="px-3 py-1 rounded-full border text-[11px] font-mono font-extrabold ${badgeClasses}">${badgeText}</span>
                     </div>
@@ -1427,6 +1590,7 @@
                     </div>
                     <p class="text-[11px] text-gray-300 bg-cyber-bg p-3 rounded-xl border border-cyber-border">${statusNote}</p>
                     ${trustHtml}
+                    ${redeemHtml}
                 </div>
             `;
             if (window.lucide) lucide.createIcons();
@@ -1470,7 +1634,7 @@
                 let statusLabel = 'PENDING';
                 if (rawStatus.includes('accept') || rawStatus.includes('approv') || rawStatus.includes('complet')) {
                     badgeColor = 'text-cyber-green bg-cyber-green/10 border-cyber-green/30';
-                    statusLabel = 'ACCEPTED';
+                    statusLabel = data.redeemCode ? 'CODE SENT' : 'ACCEPTED';
                 } else if (rawStatus.includes('reject') || rawStatus.includes('declin')) {
                     badgeColor = 'text-red-400 bg-red-500/10 border-red-500/30';
                     statusLabel = 'REJECTED';
@@ -1479,7 +1643,7 @@
                 html += `
                     <div onclick="handleOrderCardClick('${id}')" class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan transition-all cursor-pointer flex items-center justify-between text-xs">
                         <div>
-                            <span onmousedown="startOrderIdHold(event, '${id}', this)" onmouseup="cancelOrderIdHold(event, this)" class="font-mono font-bold text-cyber-cyan inline-block text-sm py-0.5 px-1 -ml-1 rounded">${id}</span>
+                            <span onmousedown="startOrderIdHold(event, '${id}', this)" onmouseup="cancelOrderIdHold(event, this)" ontouchstart="startOrderIdHold(event, '${id}', this)" ontouchend="cancelOrderIdHold(event, this)" class="font-mono font-bold text-cyber-cyan inline-block text-sm py-0.5 px-1 -ml-1 rounded">${id}</span>
                             <span class="text-[11px] text-gray-300 block font-medium">${data.customerName || data.studentName || 'Request'} • ₹${(data.total || 0).toLocaleString()}</span>
                         </div>
                         <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeColor}">${statusLabel}</span>
@@ -1496,24 +1660,28 @@
             if (val < 10) val = 10;
             if (val > 5000) val = 5000;
             
-            const regularFee = calculateExtraFee(val);
-            const regularTotal = val + regularFee;
+            const rawTierFee = calculateRawTierFee(val);
+            const discountedFee = calculateExtraFee(val);
             const firstTime = isFirstTimeUser();
-            const actualFee = firstTime ? 0 : regularFee;
+            const actualFee = firstTime ? 0 : discountedFee;
+            const originalTotal = val + rawTierFee;
             const actualTotal = val + actualFee;
 
             document.getElementById('base-amount').textContent = `₹${val}`;
             const feeEl = document.getElementById('extra-fee');
             const totalEl = document.getElementById('calculated-total');
 
-            if (firstTime && regularFee > 0) {
-                feeEl.innerHTML = `<span class="line-through text-gray-500 mr-1">+ ₹${regularFee}</span> <span class="text-cyber-green font-bold">₹0 (1st Order Free!)</span>`;
-                totalEl.innerHTML = `<span class="line-through text-gray-500 text-sm mr-1.5">₹${regularTotal}</span><span class="text-cyber-green">₹${actualTotal}</span>`;
-            } else if (firstTime && regularFee === 0) {
+            if (firstTime && rawTierFee > 0) {
+                feeEl.innerHTML = `<span class="line-through text-gray-500 mr-1">+ ₹${rawTierFee}</span> <span class="text-cyber-green font-bold">₹0 (1st Order Free!)</span>`;
+                totalEl.innerHTML = `<span class="line-through text-gray-500 text-sm mr-1.5">₹${originalTotal}</span><span class="text-cyber-green">₹${actualTotal}</span>`;
+            } else if (firstTime && rawTierFee === 0) {
                 feeEl.innerHTML = `<span class="text-cyber-green font-bold">₹0 (1st Order Free!)</span>`;
                 totalEl.textContent = `₹${actualTotal}`;
+            } else if (!firstTime && currentAdminDiscountPercent > 0 && rawTierFee > discountedFee) {
+                feeEl.innerHTML = `<span class="line-through text-gray-500 mr-1">+ ₹${rawTierFee}</span> <span class="text-cyber-yellow font-bold">+ ₹${discountedFee} (${currentAdminDiscountPercent}% off)</span>`;
+                totalEl.innerHTML = `<span class="line-through text-gray-500 text-sm mr-1.5">₹${originalTotal}</span><span class="text-cyber-yellow">₹${actualTotal}</span>`;
             } else {
-                feeEl.textContent = `+ ₹${regularFee}`;
+                feeEl.textContent = `+ ₹${actualFee}`;
                 totalEl.textContent = `₹${actualTotal}`;
             }
         };
@@ -1524,11 +1692,15 @@
             if (val < 10) val = 10;
             if (val > 5000) val = 5000;
 
-            const regularFee = calculateExtraFee(val);
+            const discountedFee = calculateExtraFee(val);
             const firstTime = isFirstTimeUser();
-            const fee = firstTime ? 0 : regularFee;
+            const fee = firstTime ? 0 : discountedFee;
             const total = val + fee;
-            const itemName = firstTime ? `Redeem Code — ₹${val} (1st Order ₹0 fee)` : `Redeem Code — ₹${val} (+₹${fee} fee)`;
+            const itemName = firstTime
+                ? `Redeem Code — ₹${val} (1st Order ₹0 fee)`
+                : (currentAdminDiscountPercent > 0 && fee > 0)
+                ? `Redeem Code — ₹${val} (+₹${fee} fee, ${currentAdminDiscountPercent}% off)`
+                : `Redeem Code — ₹${val} (+₹${fee} fee)`;
 
             cartList.push({ name: itemName, price: total, qty: 1, rcBaseAmount: val });
             updateCartBadge();
@@ -1536,9 +1708,9 @@
             openCartDrawer();
         };
 
-        window.addPresetToCart = function(name, price) {
+        window.addPresetToCart = function(name, price, explicitRcBase) {
             const match = name.match(/₹(\d+)/);
-            const rcBase = match ? parseInt(match[1], 10) : price;
+            const rcBase = explicitRcBase || (match ? parseInt(match[1], 10) : price);
             cartList.push({ name, price, qty: 1, rcBaseAmount: rcBase });
             updateCartBadge();
             showToast(`Added ${name} to your cart!`);
@@ -1551,11 +1723,15 @@
             if (val < 10) val = 10;
             if (val > 5000) val = 5000;
 
-            const regularFee = calculateExtraFee(val);
+            const discountedFee = calculateExtraFee(val);
             const firstTime = isFirstTimeUser();
-            const fee = firstTime ? 0 : regularFee;
+            const fee = firstTime ? 0 : discountedFee;
             const total = val + fee;
-            const itemName = firstTime ? `Redeem Code — ₹${val} (1st Order ₹0 fee)` : `Redeem Code — ₹${val} (+₹${fee} fee)`;
+            const itemName = firstTime
+                ? `Redeem Code — ₹${val} (1st Order ₹0 fee)`
+                : (currentAdminDiscountPercent > 0 && fee > 0)
+                ? `Redeem Code — ₹${val} (+₹${fee} fee, ${currentAdminDiscountPercent}% off)`
+                : `Redeem Code — ₹${val} (+₹${fee} fee)`;
 
             cartList = [{ name: itemName, price: total, qty: 1, rcBaseAmount: val }];
             updateCartBadge();
@@ -1593,11 +1769,6 @@
         window.removeFromCart = function(index) { cartList.splice(index, 1); updateCartBadge(); };
 
         window.confirmCheckoutPayment = function() {
-            // Request Notification Permission on checkout
-            if (window.Notification && Notification.permission !== 'granted') {
-                Notification.requestPermission();
-            }
-
             const name = document.getElementById('customer-name').value.trim();
             const locality = document.getElementById('customer-locality').value.trim();
             const profession = document.getElementById('customer-profession').value.trim();
@@ -1614,7 +1785,7 @@
             localStorage.setItem('ss_rc_saved_customer_profile', JSON.stringify({ customerName: name, locality, profession, countryCode, whatsappNumber }));
 
             const total = cartList.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const totalRcBase = cartList.reduce((sum, item) => sum + (item.rcBaseAmount || item.price), 0);
+            const totalRcBase = cartList.reduce((sum, item) => sum + ((item.rcBaseAmount || item.price) * item.qty), 0);
             const orderId = generateUniqueOrderId();
             lastGeneratedCode = orderId;
 
@@ -1633,15 +1804,6 @@
 
             renderPopularPackages();
             handleAmountInput();
-
-            // Notify user of order submission
-            addNotification({
-                id: `placed_${orderId}`,
-                title: `Order Placed - ${orderId}`,
-                message: `Your order has been placed successfully! Total: ₹${total}`,
-                seen: false,
-                createdAt: Date.now()
-            });
 
             if (auth && db) {
                 signInAnonymously(auth).then(() => {
