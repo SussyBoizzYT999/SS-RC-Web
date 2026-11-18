@@ -158,7 +158,7 @@
                 </p>
             </div>
 
-            <!-- Active Admin Discount Banner (Appears when admin configures a discount > 0%) -->
+            <!-- Active Admin Discount Banner -->
             <div id="active-discount-banner" class="hidden p-4 rounded-2xl bg-gradient-to-r from-cyber-yellow/15 via-amber-500/10 to-cyber-pink/15 border border-cyber-yellow/50 space-y-1.5 shadow-lg animate-fadeIn">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-mono text-cyber-yellow font-bold uppercase flex items-center space-x-1.5">
@@ -172,7 +172,7 @@
                 </p>
             </div>
 
-            <!-- Trust Timer Banner (Appears when payment is confirmed by admin) -->
+            <!-- Trust Timer Banner -->
             <div id="trust-timer-banner" class="hidden p-4 rounded-2xl bg-cyber-card border border-cyber-green/50 space-y-3 shadow-lg animate-fadeIn">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-mono text-cyber-green font-bold uppercase flex items-center space-x-1.5">
@@ -198,20 +198,22 @@
                         <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-mono font-bold">₹</span>
                         <input type="number" id="custom-amount-input" min="10" max="5000" placeholder="Enter Amount" oninput="handleAmountInput()" class="w-full bg-cyber-bg border border-cyber-border rounded-xl pl-9 pr-4 py-3 text-lg font-mono font-bold text-cyber-cyan focus:outline-none focus:border-cyber-cyan transition-colors">
                     </div>
+                    <!-- Invalid Number Error Hint -->
+                    <p id="amount-error-hint" class="text-[10px] font-mono text-gray-400 px-1"></p>
                 </div>
 
                 <div class="space-y-1.5 pt-3 border-t border-cyber-border">
                     <div class="flex items-center justify-between text-xs font-mono text-gray-400">
                         <span>Code Value:</span>
-                        <span id="base-amount">₹100</span>
+                        <span id="base-amount">₹0</span>
                     </div>
                     <div class="flex items-center justify-between text-xs font-mono text-cyber-pink">
                         <span>Extra Service Fee:</span>
-                        <span id="extra-fee">+ ₹10</span>
+                        <span id="extra-fee">+ ₹0</span>
                     </div>
                     <div class="flex items-center justify-between pt-2 border-t border-cyber-border/60">
                         <span class="text-xs font-mono text-gray-300 uppercase font-semibold">Amount To Be Paid:</span>
-                        <span id="calculated-total" class="text-xl font-black text-cyber-cyan font-mono">₹110</span>
+                        <span id="calculated-total" class="text-xl font-black text-cyber-cyan font-mono">₹0</span>
                     </div>
                 </div>
 
@@ -340,7 +342,7 @@
         S S | R C Redeem Code Hub • Secure Transactions Only
     </footer>
 
-    <!-- SERVICE FEES MODAL (Middle of screen) -->
+    <!-- SERVICE FEES MODAL -->
     <div id="service-fees-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-cyber-card border border-cyber-pink/70 rounded-2xl w-full max-w-sm max-h-[85vh] flex flex-col shadow-2xl animate-fadeIn">
             <div class="p-4 border-b border-cyber-border flex items-center justify-between">
@@ -376,10 +378,8 @@
             </div>
 
             <div class="space-y-4 text-xs text-gray-300 leading-relaxed">
-                <!-- Big Bold Letter Content -->
                 <div id="modal-letter-body" class="space-y-3 font-medium text-sm text-gray-100"></div>
 
-                <!-- Trust Timer Box Inside Letter Modal -->
                 <div id="modal-trust-box" class="hidden p-3.5 rounded-xl bg-cyber-bg border border-cyber-green/50 space-y-2">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-mono text-cyber-green font-bold uppercase flex items-center space-x-1.5">
@@ -552,14 +552,66 @@
                         </div>
                     </div>
                     <p id="phone-error-hint" class="text-[10px] font-mono text-gray-400 px-1"></p>
+
+                    <!-- PAYMENT METHOD SELECTION (Cash vs. UPI) -->
+                    <div class="pt-2 space-y-1">
+                        <span class="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">Pay Through</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label id="pay-mode-cash-label" onclick="setPaymentMode('cash')" class="cursor-pointer p-3 rounded-xl bg-cyber-cyan/20 border-2 border-cyber-cyan flex flex-col items-center justify-center transition-all">
+                                <input type="radio" name="pay-mode" value="cash" checked class="hidden">
+                                <span class="text-[10px] font-mono text-gray-300">Option 1</span>
+                                <span class="text-sm font-black text-white">Cash</span>
+                            </label>
+                            <label id="pay-mode-upi-label" onclick="setPaymentMode('upi')" class="cursor-pointer p-3 rounded-xl bg-cyber-card border-2 border-cyber-border flex flex-col items-center justify-center transition-all hover:border-cyber-cyan/50">
+                                <input type="radio" name="pay-mode" value="upi" class="hidden">
+                                <span class="text-[10px] font-mono text-gray-400">Option 2</span>
+                                <span class="text-sm font-black text-white">UPI</span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="pt-1">
-                    <button onclick="confirmCheckoutPayment()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-500 text-gray-950 font-extrabold text-xs hover:opacity-90 active:scale-98 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-cyber-cyan/20">
+                    <button id="checkout-confirm-btn" onclick="confirmCheckoutPayment()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-500 text-gray-950 font-extrabold text-xs hover:opacity-90 active:scale-98 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-cyber-cyan/20">
                         <i data-lucide="wallet" class="w-4 h-4"></i>
                         <span>Confirm Order (Amount To Be Paid)</span>
                     </button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- UPI QR CODE & PAYMENT MODAL -->
+    <div id="upi-qr-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl animate-fadeIn text-center">
+            <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                <div class="flex items-center space-x-2 text-cyber-cyan">
+                    <i data-lucide="qrcode" class="w-5 h-5"></i>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Scan & Pay via UPI</h3>
+                </div>
+                <button onclick="cancelUpiPayment()" class="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="space-y-2">
+                <p class="text-xs text-gray-300">Scan this FamPay QR code with any UPI app to complete payment:</p>
+                <div class="bg-white p-3 rounded-xl inline-block shadow-lg mx-auto">
+                    <img id="upi-qr-image" src="" alt="UPI QR Code" class="w-48 h-48 mx-auto object-contain">
+                </div>
+                <div class="text-[11px] font-mono text-cyber-cyan font-bold" id="upi-id-display">UPI ID: loading...</div>
+                <div class="text-sm font-black text-white">Amount: <span id="upi-amount-display" class="text-cyber-green">₹0</span></div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 pt-2">
+                <button onclick="submitUpiPaymentDone()" class="py-3 rounded-xl bg-cyber-green text-gray-950 font-extrabold text-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5 shadow-md shadow-cyber-green/20">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    <span>Payment Done</span>
+                </button>
+                <button onclick="cancelUpiPayment()" class="py-3 rounded-xl bg-red-600/20 border border-red-500/40 text-red-400 hover:bg-red-600 hover:text-white font-bold text-xs active:scale-95 transition-all flex items-center justify-center space-x-1.5">
+                    <i data-lucide="x-circle" class="w-4 h-4"></i>
+                    <span>Cancel Payment</span>
+                </button>
             </div>
         </div>
     </div>
@@ -661,6 +713,11 @@
         let selectedNotificationIndices = new Set();
         let activeModalTimerInterval = null;
         let activeNoticesCache = [];
+        let selectedPaymentMode = 'cash'; // 'cash' or 'upi'
+        let currentUpiOrderIdData = null;
+
+        // FamPay IDs for 50/50 randomized selection
+        const famPayIdsList = ['6290376102@fam', 'syamantakdey2012@fam'];
 
         // Active discount configuration synced with admin.html
         let currentAdminDiscountPercent = 0;
@@ -686,6 +743,26 @@
 
         const cachedCustomFees = localStorage.getItem('ss_rc_custom_fee_tiers');
         if (cachedCustomFees) { try { customFeeTiersArray = JSON.parse(cachedCustomFees); } catch (e) {} }
+
+        window.setPaymentMode = function(mode) {
+            selectedPaymentMode = mode;
+            const cashLbl = document.getElementById('pay-mode-cash-label');
+            const upiLbl = document.getElementById('pay-mode-upi-label');
+            const confirmBtn = document.getElementById('checkout-confirm-btn');
+
+            if (mode === 'cash') {
+                cashLbl.className = "cursor-pointer p-3 rounded-xl bg-cyber-cyan/20 border-2 border-cyber-cyan flex flex-col items-center justify-center transition-all";
+                upiLbl.className = "cursor-pointer p-3 rounded-xl bg-cyber-card border-2 border-cyber-border flex flex-col items-center justify-center transition-all hover:border-cyber-cyan/50";
+                cashLbl.querySelector('input').checked = true;
+                confirmBtn.innerHTML = `<i data-lucide="wallet" class="w-4 h-4"></i><span>Confirm Order (Cash Payment)</span>`;
+            } else {
+                upiLbl.className = "cursor-pointer p-3 rounded-xl bg-cyber-cyan/20 border-2 border-cyber-cyan flex flex-col items-center justify-center transition-all";
+                cashLbl.className = "cursor-pointer p-3 rounded-xl bg-cyber-card border-2 border-cyber-border flex flex-col items-center justify-center transition-all hover:border-cyber-cyan/50";
+                upiLbl.querySelector('input').checked = true;
+                confirmBtn.innerHTML = `<i data-lucide="qrcode" class="w-4 h-4"></i><span>Proceed to UPI QR Code</span>`;
+            }
+            if (window.lucide) lucide.createIcons();
+        };
 
         function computeDiscountExpiryMs(data) {
             const updatedAt = Number(data.updatedAt || 0);
@@ -769,7 +846,6 @@
             try {
                 await signInAnonymously(auth);
 
-                // Fee Tiers listener (synced with admin.html)
                 const feeDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'feeTiersCustom');
                 onSnapshot(feeDocRef, (snap) => {
                     if (snap.exists() && snap.data().tiers) {
@@ -780,7 +856,6 @@
                     }
                 });
 
-                // Discount Config listener (synced with admin.html)
                 const discountDocRef = doc(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'config', 'discountConfig');
                 onSnapshot(discountDocRef, (snap) => {
                     if (snap.exists()) {
@@ -867,7 +942,6 @@
             const status = (order.status || '').toLowerCase();
             const orderId = order.orderId;
 
-            // 1. Request Accepted / Rejected notification
             const acceptedKey = `notif_accepted_${orderId}`;
             if ((status.includes('accept') || status.includes('approv') || status.includes('complet')) && !localStorage.getItem(acceptedKey)) {
                 addNotification({
@@ -881,18 +955,17 @@
             }
 
             const rejectedKey = `notif_rejected_${orderId}`;
-            if ((status.includes('reject') || status.includes('declin')) && !localStorage.getItem(rejectedKey)) {
+            if ((status.includes('reject') || status.includes('declin') || status.includes('cancel')) && !localStorage.getItem(rejectedKey)) {
                 addNotification({
                     id: `rejected_${orderId}_${Date.now()}`,
-                    title: `Request Rejected - ${orderId}`,
-                    message: `Your order request (${orderId}) was rejected by the admin.`,
+                    title: `Order Cancelled/Rejected - ${orderId}`,
+                    message: `Your order request (${orderId}) was cancelled or not received after verification check.`,
                     seen: false,
                     createdAt: Date.now()
                 });
                 localStorage.setItem(rejectedKey, 'true');
             }
 
-            // 2. Payment Received Confirmed triggered by admin (supports both trustTimerStart / cashConfirmed & cashReceivedAt)
             const trustStartTimestamp = order.trustTimerStart || order.cashReceivedAt;
             const cashKey = `notif_cash_${orderId}`;
             if ((order.cashConfirmed || trustStartTimestamp) && !localStorage.getItem(cashKey)) {
@@ -912,7 +985,6 @@
                 }
             }
 
-            // 3. Redeem code(s) sent by admin -> Notify user with 16-char code(s)
             const codeKey = `notif_code_${orderId}`;
             if (order.redeemCode && !localStorage.getItem(codeKey)) {
                 addNotification({
@@ -1120,7 +1192,6 @@
 
             modal.classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
-            
             switchPage('home');
         };
 
@@ -1240,7 +1311,11 @@
 
         function isFirstTimeUser() { return myLocalOrderIds.length === 0; }
 
-        function calculateExtraFee(val) {
+        function calculateCartSubtotal() {
+            return cartList.reduce((sum, item) => sum + ((item.rcBaseAmount || item.price) * item.qty), 0);
+        }
+
+        function calculateExtraFeeForAmount(val) {
             let baseFee = 0;
             for (const tier of customFeeTiersArray) {
                 if (val >= tier.min && val <= tier.max) {
@@ -1255,7 +1330,7 @@
             return Math.round(baseFee);
         }
 
-        function calculateRawTierFee(val) {
+        function calculateRawTierFeeForAmount(val) {
             for (const tier of customFeeTiersArray) {
                 if (val >= tier.min && val <= tier.max) {
                     return Number(tier.fee || 0);
@@ -1279,8 +1354,8 @@
             const colors = ['cyan', 'pink', 'purple', 'green', 'yellow'];
 
             container.innerHTML = amounts.map((codeVal, idx) => {
-                const rawTierFee = calculateRawTierFee(codeVal);
-                const discountedFee = calculateExtraFee(codeVal);
+                const rawTierFee = calculateRawTierFeeForAmount(codeVal);
+                const discountedFee = calculateExtraFeeForAmount(codeVal);
                 const finalFee = firstTime ? 0 : discountedFee;
                 const originalTotal = codeVal + rawTierFee;
                 const finalTotal = codeVal + finalFee;
@@ -1322,7 +1397,7 @@
                             <p class="text-[11px] text-gray-400">Code ₹${codeVal} + ${feeHtml}</p>
                             <span class="text-xs font-mono ${textAccent} font-bold mt-1 inline-block">${payHtml}</span>
                         </div>
-                        <button onclick="addPresetToCart('${itemLabel}', ${finalTotal}, ${codeVal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all active:scale-95">
+                        <button onclick="addPresetToCart('${itemLabel}', ${codeVal})" class="px-3.5 py-2 rounded-lg ${btnClasses} text-xs font-bold transition-all active:scale-95">
                             Add
                         </button>
                     </div>
@@ -1419,6 +1494,9 @@
                 document.getElementById('customer-profession').value = profile.profession || '';
                 document.getElementById('country-code-select').value = profile.countryCode || '+91';
                 document.getElementById('customer-whatsapp').value = profile.whatsappNumber || '';
+                if (profile.paymentMode) {
+                    setPaymentMode(profile.paymentMode);
+                }
                 onCountryCodeChange();
                 showToast("Details auto-filled from your previous order!");
             } catch (e) { showToast("Unable to load saved profile."); }
@@ -1552,10 +1630,10 @@
                     : (data.cashConfirmed || data.trustTimerStart || data.cashReceivedAt)
                     ? 'Payment received & confirmed! Trust timer is active for redeem code delivery.'
                     : 'Order accepted! Please bring payment.';
-            } else if (rawStatus.includes('reject') || rawStatus.includes('declin')) {
-                badgeText = 'REJECTED';
+            } else if (rawStatus.includes('reject') || rawStatus.includes('declin') || rawStatus.includes('cancel')) {
+                badgeText = 'CANCELLED / REJECTED';
                 badgeClasses = 'bg-red-500/15 text-red-400 border-red-500/40';
-                statusNote = 'This order request was rejected.';
+                statusNote = 'This order request was cancelled or payment was not received.';
             }
 
             const trustStart = data.trustTimerStart || data.cashReceivedAt;
@@ -1604,6 +1682,7 @@
                     <div class="space-y-1.5 text-xs font-mono">
                         <div class="flex justify-between"><span class="text-gray-400">Name:</span><span class="text-white">${data.customerName || data.studentName || 'N/A'}</span></div>
                         <div class="flex justify-between"><span class="text-gray-400">Locality:</span><span class="text-white">${data.locality || 'N/A'}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-400">Payment Mode:</span><span class="text-cyber-pink font-bold uppercase">${data.paymentMode || 'Cash'}</span></div>
                         <div class="flex justify-between"><span class="text-gray-400">Amount To Be Paid:</span><span class="text-cyber-cyan font-bold">₹${(data.total || 0).toLocaleString()}</span></div>
                     </div>
                     <p class="text-[11px] text-gray-300 bg-cyber-bg p-3 rounded-xl border border-cyber-border">${statusNote}</p>
@@ -1653,16 +1732,16 @@
                 if (rawStatus.includes('accept') || rawStatus.includes('approv') || rawStatus.includes('complet')) {
                     badgeColor = 'text-cyber-green bg-cyber-green/10 border-cyber-green/30';
                     statusLabel = data.redeemCode ? 'CODE SENT' : 'ACCEPTED';
-                } else if (rawStatus.includes('reject') || rawStatus.includes('declin')) {
+                } else if (rawStatus.includes('reject') || rawStatus.includes('declin') || rawStatus.includes('cancel')) {
                     badgeColor = 'text-red-400 bg-red-500/10 border-red-500/30';
-                    statusLabel = 'REJECTED';
+                    statusLabel = 'CANCELLED';
                 }
 
                 html += `
                     <div onclick="handleOrderCardClick('${id}')" class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border hover:border-cyber-cyan transition-all cursor-pointer flex items-center justify-between text-xs">
                         <div>
                             <span onmousedown="startOrderIdHold(event, '${id}', this)" onmouseup="cancelOrderIdHold(event, this)" ontouchstart="startOrderIdHold(event, '${id}', this)" ontouchend="cancelOrderIdHold(event, this)" class="font-mono font-bold text-cyber-cyan inline-block text-sm py-0.5 px-1 -ml-1 rounded">${id}</span>
-                            <span class="text-[11px] text-gray-300 block font-medium">${data.customerName || data.studentName || 'Request'} • ₹${(data.total || 0).toLocaleString()}</span>
+                            <span class="text-[11px] text-gray-300 block font-medium">${data.customerName || data.studentName || 'Request'} • ₹${(data.total || 0).toLocaleString()} (${data.paymentMode || 'Cash'})</span>
                         </div>
                         <span class="px-2.5 py-1 rounded-full border text-[10px] font-mono font-bold ${badgeColor}">${statusLabel}</span>
                     </div>
@@ -1674,20 +1753,43 @@
 
         window.handleAmountInput = function() {
             const input = document.getElementById('custom-amount-input');
-            let val = parseInt(input.value) || 0;
-            if (val < 10) val = 10;
-            if (val > 5000) val = 5000;
-            
-            const rawTierFee = calculateRawTierFee(val);
-            const discountedFee = calculateExtraFee(val);
+            const rawVal = input.value.trim();
+            const hint = document.getElementById('amount-error-hint');
+            const baseEl = document.getElementById('base-amount');
+            const feeEl = document.getElementById('extra-fee');
+            const totalEl = document.getElementById('calculated-total');
+
+            // If empty, 0, or single digit 0-9 -> show 0 and invalid message
+            if (rawVal === '' || (rawVal.length === 1 && rawVal >= '0' && rawVal <= '9')) {
+                baseEl.textContent = '₹0';
+                feeEl.textContent = '+ ₹0';
+                totalEl.textContent = '₹0';
+                hint.textContent = "This number is invalid. Minimum value is 10 and maximum value is 5000.";
+                hint.className = "text-[10px] font-mono text-cyber-yellow px-1";
+                return;
+            }
+
+            let val = parseInt(rawVal, 10);
+            if (isNaN(val) || val < 10 || val > 5000) {
+                baseEl.textContent = '₹0';
+                feeEl.textContent = '+ ₹0';
+                totalEl.textContent = '₹0';
+                hint.textContent = "This number is invalid. Minimum value is 10 and maximum value is 5000.";
+                hint.className = "text-[10px] font-mono text-red-400 px-1";
+                return;
+            }
+
+            hint.textContent = "✓ Valid amount range.";
+            hint.className = "text-[10px] font-mono text-cyber-green px-1";
+
+            const rawTierFee = calculateRawTierFeeForAmount(val);
+            const discountedFee = calculateExtraFeeForAmount(val);
             const firstTime = isFirstTimeUser();
             const actualFee = firstTime ? 0 : discountedFee;
             const originalTotal = val + rawTierFee;
             const actualTotal = val + actualFee;
 
-            document.getElementById('base-amount').textContent = `₹${val}`;
-            const feeEl = document.getElementById('extra-fee');
-            const totalEl = document.getElementById('calculated-total');
+            baseEl.textContent = `₹${val}`;
 
             if (firstTime && rawTierFee > 0) {
                 feeEl.innerHTML = `<span class="line-through text-gray-500 mr-1">+ ₹${rawTierFee}</span> <span class="text-cyber-green font-bold">₹0 (1st Order Free!)</span>`;
@@ -1706,11 +1808,13 @@
 
         window.addCustomToCart = function() {
             const input = document.getElementById('custom-amount-input');
-            let val = parseInt(input.value) || 100;
-            if (val < 10) val = 10;
-            if (val > 5000) val = 5000;
+            let val = parseInt(input.value) || 0;
+            if (val < 10 || val > 5000) {
+                showToast("Please enter a valid amount between ₹10 and ₹5,000.");
+                return;
+            }
 
-            const discountedFee = calculateExtraFee(val);
+            const discountedFee = calculateExtraFeeForAmount(val);
             const firstTime = isFirstTimeUser();
             const fee = firstTime ? 0 : discountedFee;
             const total = val + fee;
@@ -1726,10 +1830,15 @@
             openCartDrawer();
         };
 
-        window.addPresetToCart = function(name, price, explicitRcBase) {
-            const match = name.match(/₹(\d+)/);
-            const rcBase = explicitRcBase || (match ? parseInt(match[1], 10) : price);
-            cartList.push({ name, price, qty: 1, rcBaseAmount: rcBase });
+        window.addPresetToCart = function(name, explicitRcBase) {
+            const rcBase = explicitRcBase;
+            const rawTierFee = calculateRawTierFeeForAmount(rcBase);
+            const discountedFee = calculateExtraFeeForAmount(rcBase);
+            const firstTime = isFirstTimeUser();
+            const fee = firstTime ? 0 : discountedFee;
+            const total = rcBase + fee;
+
+            cartList.push({ name, price: total, qty: 1, rcBaseAmount: rcBase });
             updateCartBadge();
             showToast(`Added ${name} to your cart!`);
             openCartDrawer();
@@ -1737,11 +1846,13 @@
 
         window.openDirectCheckout = function() {
             const input = document.getElementById('custom-amount-input');
-            let val = parseInt(input.value) || 100;
-            if (val < 10) val = 10;
-            if (val > 5000) val = 5000;
+            let val = parseInt(input.value) || 0;
+            if (val < 10 || val > 5000) {
+                showToast("Please enter a valid amount between ₹10 and ₹5,000.");
+                return;
+            }
 
-            const discountedFee = calculateExtraFee(val);
+            const discountedFee = calculateExtraFeeForAmount(val);
             const firstTime = isFirstTimeUser();
             const fee = firstTime ? 0 : discountedFee;
             const total = val + fee;
@@ -1752,6 +1863,7 @@
                 : `Redeem Code — ₹${val} (+₹${fee} fee)`;
 
             cartList = [{ name: itemName, price: total, qty: 1, rcBaseAmount: val }];
+            setPaymentMode('cash');
             updateCartBadge();
             openCartDrawer();
         };
@@ -1768,17 +1880,27 @@
                 totalEl.textContent = '₹0';
                 return;
             }
-            let html = ''; let grandTotal = 0;
-            cartList.forEach((item, index) => {
-                const itemTotal = item.price * item.qty;
-                grandTotal += itemTotal;
-                html += `
-                    <div class="p-3 rounded-xl bg-cyber-bg border border-cyber-border flex items-center justify-between">
-                        <div><h4 class="text-xs font-bold text-white">${item.name}</h4><span class="text-[11px] font-mono text-cyber-cyan">₹${itemTotal.toLocaleString()}</span></div>
-                        <button onclick="removeFromCart(${index})" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-                    </div>
-                `;
-            });
+
+            // Cart-Wide Fee Calculation across all items combined
+            const subtotal = calculateCartSubtotal();
+            const firstTime = isFirstTimeUser();
+            const combinedFee = firstTime ? 0 : calculateExtraFeeForAmount(subtotal);
+            const grandTotal = subtotal + combinedFee;
+
+            let html = cartList.map((item, index) => `
+                <div class="p-3 rounded-xl bg-cyber-bg border border-cyber-border flex items-center justify-between">
+                    <div><h4 class="text-xs font-bold text-white">${item.name}</h4><span class="text-[11px] font-mono text-cyber-cyan">Base: ₹${item.rcBaseAmount}</span></div>
+                    <button onclick="removeFromCart(${index})" class="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                </div>
+            `).join('');
+
+            html += `
+                <div class="p-3 rounded-xl bg-cyber-card border border-cyber-cyan/40 space-y-1 text-xs font-mono">
+                    <div class="flex justify-between text-gray-400"><span>Cart Subtotal:</span><span>₹${subtotal}</span></div>
+                    <div class="flex justify-between text-cyber-pink"><span>Combined Service Fee:</span><span>+ ₹${combinedFee}</span></div>
+                </div>
+            `;
+
             container.innerHTML = html;
             totalEl.textContent = `₹${grandTotal.toLocaleString()}`;
             if (window.lucide) lucide.createIcons();
@@ -1800,24 +1922,74 @@
             if (whatsappNumber.length !== requiredDigits) { showToast(`Whatsapp number must be exactly ${requiredDigits} digits for ${countryCode}.`); return; }
             if (cartList.length === 0) { showToast("Your cart is empty."); return; }
 
-            localStorage.setItem('ss_rc_saved_customer_profile', JSON.stringify({ customerName: name, locality, profession, countryCode, whatsappNumber }));
+            localStorage.setItem('ss_rc_saved_customer_profile', JSON.stringify({ customerName: name, locality, profession, countryCode, whatsappNumber, paymentMode: selectedPaymentMode }));
 
-            const total = cartList.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            const totalRcBase = cartList.reduce((sum, item) => sum + ((item.rcBaseAmount || item.price) * item.qty), 0);
+            const subtotal = calculateCartSubtotal();
+            const firstTime = isFirstTimeUser();
+            const combinedFee = firstTime ? 0 : calculateExtraFeeForAmount(subtotal);
+            const total = subtotal + combinedFee;
             const orderId = generateUniqueOrderId();
             lastGeneratedCode = orderId;
 
             const orderData = {
                 orderId, customerName: name, locality, profession, countryCode, whatsappNumber,
-                whatsappFull: `${countryCode} ${whatsappNumber}`, items: [...cartList], total, rcBaseAmount: totalRcBase,
+                whatsappFull: `${countryCode} ${whatsappNumber}`, items: [...cartList], total, rcBaseAmount: subtotal,
+                paymentMode: selectedPaymentMode,
                 status: 'Pending', createdAt: Date.now(), date: new Date().toLocaleDateString()
             };
 
-            if (!myLocalOrderIds.includes(orderId)) {
-                myLocalOrderIds.unshift(orderId);
+            closeCartDrawer();
+
+            if (selectedPaymentMode === 'upi') {
+                currentUpiOrderIdData = orderData;
+                openUpiQrModal(orderData);
+                return;
+            }
+
+            finalizeOrderSubmission(orderData);
+        };
+
+        window.openUpiQrModal = function(order) {
+            // 50/50 randomized selection between the two FamPay IDs
+            const randomUpiId = famPayIdsList[Math.floor(Math.random() * famPayIdsList.length)];
+            order.upiIdUsed = randomUpiId;
+
+            const upiUri = `upi://pay?pa=${encodeURIComponent(randomUpiId)}&pn=${encodeURIComponent(order.customerName)}&am=${order.total}&cu=INR`;
+            const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUri)}`;
+
+            document.getElementById('upi-qr-image').src = qrImageUrl;
+            document.getElementById('upi-id-display').textContent = `UPI ID: ${randomUpiId}`;
+            document.getElementById('upi-amount-display').textContent = `₹${order.total}`;
+            document.getElementById('upi-qr-modal').classList.remove('hidden');
+        };
+
+        window.submitUpiPaymentDone = function() {
+            if (!currentUpiOrderIdData) return;
+            document.getElementById('upi-qr-modal').classList.add('hidden');
+            finalizeOrderSubmission(currentUpiOrderIdData);
+            currentUpiOrderIdData = null;
+        };
+
+        window.cancelUpiPayment = function() {
+            document.getElementById('upi-qr-modal').classList.add('hidden');
+            if (currentUpiOrderIdData) {
+                currentUpiOrderIdData.status = 'Cancelled';
+                if (auth && db) {
+                    signInAnonymously(auth).then(() => {
+                        addDoc(collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolOrders'), currentUpiOrderIdData).catch(err => {});
+                    });
+                }
+            }
+            currentUpiOrderIdData = null;
+            showToast("UPI Payment Cancelled.");
+        };
+
+        function finalizeOrderSubmission(orderData) {
+            if (!myLocalOrderIds.includes(orderData.orderId)) {
+                myLocalOrderIds.unshift(orderData.orderId);
                 localStorage.setItem('ss_rc_my_permanent_orders', JSON.stringify(myLocalOrderIds));
             }
-            myLocalOrdersMap[orderId] = orderData;
+            myLocalOrdersMap[orderData.orderId] = orderData;
             localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
 
             renderPopularPackages();
@@ -1829,11 +2001,10 @@
                 }).catch(err => {});
             }
 
-            closeCartDrawer();
             showReceiptModal(orderData);
             cartList = [];
             updateCartBadge();
-        };
+        }
 
         window.showReceiptModal = function(order) {
             const modal = document.getElementById('receipt-modal');
@@ -1841,7 +2012,7 @@
             details.innerHTML = `
                 <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Customer ID:</span><span class="text-cyber-cyan font-bold">${order.orderId}</span></div>
                 <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Name:</span><span class="text-white">${order.customerName}</span></div>
-                <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Locality:</span><span class="text-white">${order.locality}</span></div>
+                <div class="flex justify-between border-b border-cyber-border pb-1"><span class="text-gray-400">Payment Mode:</span><span class="text-cyber-pink uppercase font-bold">${order.paymentMode || 'Cash'}</span></div>
                 <div class="flex justify-between pt-1"><span class="text-gray-400">Amount To Be Paid:</span><span class="text-cyber-green font-bold">₹${order.total.toLocaleString()}</span></div>
             `;
             modal.classList.remove('hidden');
