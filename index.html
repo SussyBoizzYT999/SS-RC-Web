@@ -79,6 +79,106 @@
             animation: holdPulse 0.4s infinite ease-in-out;
             text-shadow: 0 0 10px rgba(0, 240, 255, 0.7);
         }
+        @keyframes stagePulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 240, 255, 0.45); transform: scale(1); }
+            50% { box-shadow: 0 0 14px 4px rgba(0, 240, 255, 0.25); transform: scale(1.06); }
+        }
+        .stage-node-active {
+            animation: stagePulse 1.8s infinite ease-in-out;
+        }
+
+        /* Custom HTML/CSS Icons (Strictly No Emojis) */
+        .css-icon-check {
+            display: inline-block;
+            width: 10px;
+            height: 6px;
+            border-left: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: rotate(-45deg) translate(1px, -1px);
+        }
+        .css-icon-bag {
+            position: relative;
+            display: inline-block;
+            width: 12px;
+            height: 11px;
+            border: 2px solid currentColor;
+            border-radius: 2px;
+            margin-top: 3px;
+        }
+        .css-icon-bag::before {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: 1px;
+            width: 6px;
+            height: 4px;
+            border: 2px solid currentColor;
+            border-bottom: none;
+            border-radius: 4px 4px 0 0;
+        }
+        .css-icon-shield {
+            position: relative;
+            display: inline-block;
+            width: 11px;
+            height: 13px;
+            border: 2px solid currentColor;
+            border-radius: 2px 2px 6px 6px;
+        }
+        .css-icon-code {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-top: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+            transform: rotate(45deg) translate(-1px, 1px);
+        }
+        .css-icon-pin {
+            position: relative;
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            transform: rotate(45deg);
+        }
+        .css-icon-pin::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+            background: transparent;
+        }
+        .css-icon-pin.pinned::before {
+            background: currentColor;
+        }
+        .css-icon-pin::after {
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 5px;
+            width: 2px;
+            height: 6px;
+            background: currentColor;
+        }
+        .css-star {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background-color: #2b354a;
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            transition: transform 0.18s ease, background-color 0.18s ease;
+            cursor: pointer;
+        }
+        .css-star.active {
+            background-color: #ffe600;
+            transform: scale(1.12);
+        }
+        .css-star:hover {
+            transform: scale(1.15);
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -172,6 +272,69 @@
                 </p>
             </div>
 
+            <!-- 1. INTERACTIVE ORDER STATUS TIMELINE (Sits directly above Trust Timer if active, or directly above Custom Amount Entry) -->
+            <div id="live-order-timeline-banner" class="hidden p-4 rounded-2xl bg-cyber-card border border-cyber-cyan/50 space-y-3.5 shadow-lg animate-fadeIn">
+                <div class="flex items-center justify-between border-b border-cyber-border/80 pb-2.5">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-2 h-2 rounded-full bg-cyber-cyan animate-ping"></span>
+                        <span class="text-xs font-mono font-bold text-cyber-cyan uppercase tracking-wider">Live Order Status</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span id="timeline-order-id" class="text-[11px] font-mono font-extrabold text-white bg-cyber-bg px-2 py-0.5 rounded border border-cyber-border">REQ-0000</span>
+                        <button onclick="dismissOrderTimeline()" title="Hide Timeline" class="text-gray-500 hover:text-gray-300 text-xs font-mono px-1">×</button>
+                    </div>
+                </div>
+
+                <!-- 4 Sequential Stages Tracked -->
+                <div class="relative pt-1 pb-1">
+                    <!-- Progress Track Background -->
+                    <div class="absolute top-5 left-6 right-6 h-1 bg-cyber-border rounded-full overflow-hidden">
+                        <div id="timeline-progress-fill" class="h-full bg-gradient-to-r from-cyber-cyan via-cyber-purple to-cyber-green transition-all duration-700 ease-out" style="width: 0%;"></div>
+                    </div>
+
+                    <div class="relative grid grid-cols-4 gap-1 text-center z-10">
+                        <!-- Stage 1: Order Placed -->
+                        <div id="timeline-stage-1" class="flex flex-col items-center space-y-1.5">
+                            <div class="stage-circle w-8 h-8 rounded-full bg-cyber-bg border-2 border-cyber-border flex items-center justify-center text-gray-400 transition-all duration-300">
+                                <span class="css-icon-bag"></span>
+                            </div>
+                            <span class="stage-label text-[9px] font-mono font-bold text-gray-400 leading-tight">Order Placed</span>
+                        </div>
+
+                        <!-- Stage 2: Payment Verified -->
+                        <div id="timeline-stage-2" class="flex flex-col items-center space-y-1.5">
+                            <div class="stage-circle w-8 h-8 rounded-full bg-cyber-bg border-2 border-cyber-border flex items-center justify-center text-gray-400 transition-all duration-300">
+                                <span class="css-icon-shield"></span>
+                            </div>
+                            <span class="stage-label text-[9px] font-mono font-bold text-gray-400 leading-tight">Payment Verified</span>
+                        </div>
+
+                        <!-- Stage 3: Generating Code -->
+                        <div id="timeline-stage-3" class="flex flex-col items-center space-y-1.5">
+                            <div class="stage-circle w-8 h-8 rounded-full bg-cyber-bg border-2 border-cyber-border flex items-center justify-center text-gray-400 transition-all duration-300">
+                                <span class="css-icon-code"></span>
+                            </div>
+                            <span class="stage-label text-[9px] font-mono font-bold text-gray-400 leading-tight">Generating Code</span>
+                        </div>
+
+                        <!-- Stage 4: Ready -->
+                        <div id="timeline-stage-4" class="flex flex-col items-center space-y-1.5">
+                            <div class="stage-circle w-8 h-8 rounded-full bg-cyber-bg border-2 border-cyber-border flex items-center justify-center text-gray-400 transition-all duration-300">
+                                <span class="css-icon-check"></span>
+                            </div>
+                            <span class="stage-label text-[9px] font-mono font-bold text-gray-400 leading-tight">Ready</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between bg-cyber-bg/90 px-3 py-2 rounded-xl border border-cyber-border/70">
+                    <p id="timeline-status-desc" class="text-[11px] text-gray-300 font-medium">Order submitted. Awaiting payment verification.</p>
+                    <button id="timeline-open-notif-btn" onclick="switchPage('notifications')" class="hidden ml-2 px-2.5 py-1 rounded-lg bg-cyber-green text-gray-950 font-mono font-extrabold text-[10px] whitespace-nowrap active:scale-95 transition-all">
+                        View Code
+                    </button>
+                </div>
+            </div>
+
             <!-- Trust Timer Banner -->
             <div id="trust-timer-banner" class="hidden p-4 rounded-2xl bg-cyber-card border border-cyber-green/50 space-y-3 shadow-lg animate-fadeIn">
                 <div class="flex items-center justify-between">
@@ -234,6 +397,33 @@
                 <h3 class="text-xs font-mono text-gray-400 uppercase tracking-widest px-1">Popular Packages</h3>
                 <div id="popular-packages-container" class="grid grid-cols-1 gap-3"></div>
             </div>
+        </div>
+
+        <!-- 2. REORDER & HISTORY MANAGEMENT VIEW -->
+        <div id="view-reorder" class="hidden space-y-5 animate-fadeIn">
+            <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
+                <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                    <div>
+                        <h2 class="text-base font-bold text-white flex items-center space-x-2">
+                            <i data-lucide="repeat" class="w-4 h-4 text-cyber-green"></i>
+                            <span>Quick Reorder & History</span>
+                        </h2>
+                        <p class="text-[10px] font-mono text-gray-400">Pin favorites to top or reorder in 1 click</p>
+                    </div>
+                    <button onclick="deleteAllSavedReorders()" class="px-2.5 py-1.5 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500 hover:text-white text-[11px] font-mono font-bold transition-all active:scale-95">
+                        Delete All
+                    </button>
+                </div>
+
+                <div id="reorder-history-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-0.5">
+                    <div class="text-center py-6 text-gray-500 text-xs font-mono">No past orders stored yet.</div>
+                </div>
+            </div>
+
+            <button onclick="switchPage('home')" class="w-full py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-white text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all active:scale-98">
+                <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                <span>Back to Home</span>
+            </button>
         </div>
 
         <!-- TRACK ORDER VIEW -->
@@ -319,7 +509,7 @@
             </button>
         </div>
 
-        <!-- INFO VIEW -->
+        <!-- INFO & FAQ VIEW -->
         <div id="view-info" class="hidden space-y-5 animate-fadeIn">
             <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
                 <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -364,7 +554,7 @@
         </div>
     </div>
 
-    <!-- NOTIFICATION LETTER & TRUST TIMER MODAL -->
+    <!-- NOTIFICATION LETTER & TRUST TIMER MODAL (Exclusive Redeem Code Access) -->
     <div id="notif-letter-modal" class="fixed inset-0 z-50 bg-cyber-bg/90 backdrop-blur-md hidden flex items-center justify-center p-4">
         <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-6 space-y-5 shadow-2xl animate-fadeIn">
             <div class="flex items-center justify-between border-b border-cyber-border pb-3">
@@ -400,6 +590,52 @@
         </div>
     </div>
 
+    <!-- PHASE 3: INSTANT RATING & FEEDBACK MODAL -->
+    <div id="rating-feedback-modal" class="fixed inset-0 z-50 bg-cyber-bg/92 backdrop-blur-md hidden flex items-center justify-center p-4">
+        <div class="bg-cyber-card border border-cyber-yellow/70 rounded-2xl w-full max-w-sm p-6 space-y-5 shadow-2xl animate-fadeIn">
+            <div class="flex items-center justify-between border-b border-cyber-border pb-3">
+                <div class="flex items-center space-x-2 text-cyber-yellow">
+                    <i data-lucide="award" class="w-5 h-5"></i>
+                    <h3 class="text-sm font-bold text-white uppercase tracking-wider">Rate Your Experience</h3>
+                </div>
+                <button onclick="closeRatingModal()" class="p-1.5 rounded-lg bg-white/5 text-gray-400 hover:text-white transition-colors">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-center">
+                <p class="text-xs text-gray-300 leading-relaxed">
+                    Your redeem code is ready! Tap the stars below to rate S S | R C and leave a message for the admin.
+                </p>
+
+                <!-- Custom HTML/CSS Interactive Stars (No Emojis) -->
+                <div id="rating-stars-container" class="flex items-center justify-center space-x-3 py-2">
+                    <span class="css-star" data-star="1" onclick="selectRatingStar(1)" aria-label="1 Star"></span>
+                    <span class="css-star" data-star="2" onclick="selectRatingStar(2)" aria-label="2 Stars"></span>
+                    <span class="css-star" data-star="3" onclick="selectRatingStar(3)" aria-label="3 Stars"></span>
+                    <span class="css-star" data-star="4" onclick="selectRatingStar(4)" aria-label="4 Stars"></span>
+                    <span class="css-star" data-star="5" onclick="selectRatingStar(5)" aria-label="5 Stars"></span>
+                </div>
+                <p id="rating-label-text" class="text-[11px] font-mono text-cyber-cyan font-bold">Select a star rating</p>
+
+                <!-- Leave a Comment Text Box -->
+                <div class="text-left space-y-1.5">
+                    <label for="rating-comment-input" class="text-[10px] font-mono text-gray-400 uppercase tracking-wider block">Leave a Comment (Feedback / Suggestions)</label>
+                    <textarea id="rating-comment-input" rows="3" placeholder="Write your feedback, suggestions, or appreciation here..." class="w-full bg-cyber-bg border border-cyber-border rounded-xl px-3.5 py-2.5 text-xs text-white focus:outline-none focus:border-cyber-yellow transition-colors resize-none"></textarea>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                <button onclick="closeRatingModal()" class="py-2.5 rounded-xl bg-cyber-bg border border-cyber-border text-gray-400 hover:text-white text-xs font-semibold transition-all">
+                    Skip
+                </button>
+                <button onclick="submitCustomerFeedback()" class="py-2.5 rounded-xl bg-gradient-to-r from-cyber-yellow to-amber-500 text-gray-950 font-extrabold text-xs hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-cyber-yellow/20">
+                    Submit Feedback
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- POPUP NOTICE MODAL -->
     <div id="popup-notice-modal" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex items-center justify-center p-4">
         <div class="bg-cyber-card border border-cyber-cyan rounded-2xl w-full max-w-sm p-5 space-y-4 shadow-2xl animate-fadeIn">
@@ -421,8 +657,8 @@
 
     <!-- NAVIGATION DRAWER -->
     <div id="nav-drawer" class="fixed inset-0 z-50 bg-cyber-bg/85 backdrop-blur-sm hidden flex">
-        <div class="w-72 max-w-[82vw] bg-cyber-card border-r border-cyber-border h-full flex flex-col justify-between p-5 shadow-2xl animate-fadeIn">
-            <div class="space-y-6">
+        <div class="w-72 max-w-[82vw] bg-cyber-card border-r border-cyber-border h-full flex flex-col justify-between p-5 shadow-2xl animate-fadeIn overflow-y-auto">
+            <div class="space-y-5">
                 <div class="flex items-center justify-between border-b border-cyber-border pb-4">
                     <div>
                         <span class="text-base font-black tracking-wider text-cyber-cyan">S S <span class="text-cyber-pink font-light">|</span> <span class="text-cyber-purple">R C</span></span>
@@ -440,6 +676,13 @@
                             <i data-lucide="home" class="w-4 h-4 text-cyber-cyan"></i>
                             <span>Home</span>
                         </button>
+                        <button onclick="switchPage('reorder')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-green/15 hover:text-cyber-green transition-all">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="repeat" class="w-4 h-4 text-cyber-green"></i>
+                                <span>Reorder</span>
+                            </div>
+                            <span id="nav-reorder-count" class="px-2 py-0.5 rounded-full bg-cyber-green/15 text-cyber-green text-[10px] font-mono">0</span>
+                        </button>
                         <button onclick="switchPage('notifications')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-purple/15 hover:text-cyber-purple transition-all">
                             <div class="flex items-center space-x-3">
                                 <i data-lucide="bell" class="w-4 h-4 text-cyber-purple"></i>
@@ -456,7 +699,7 @@
 
                 <div class="space-y-2">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-cyber-yellow px-2">Active Notices</p>
-                    <div id="drawer-notices-container" class="p-2.5 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-2 max-h-36 overflow-y-auto">
+                    <div id="drawer-notices-container" class="p-2.5 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-2 max-h-32 overflow-y-auto">
                         <p class="text-[11px] text-gray-500 font-mono text-center py-2">No active notices.</p>
                     </div>
                 </div>
@@ -464,6 +707,10 @@
                 <div class="space-y-2 pt-2 border-t border-cyber-border/70">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-gray-500 px-2">More & Policies</p>
                     <div class="p-2 rounded-2xl bg-cyber-bg/40 border border-cyber-border/60 space-y-1">
+                        <button onclick="openInfoPage('faq')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-cyber-cyan transition-all">
+                            <i data-lucide="help-circle" class="w-3.5 h-3.5 text-cyber-cyan"></i>
+                            <span>FAQ</span>
+                        </button>
                         <button onclick="openInfoPage('about')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
                             <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
                             <span>About S S | R C</span>
@@ -484,7 +731,7 @@
                 </div>
             </div>
 
-            <div class="text-[10px] font-mono text-gray-500 text-center border-t border-cyber-border pt-3">
+            <div class="text-[10px] font-mono text-gray-500 text-center border-t border-cyber-border pt-3 mt-4">
                 Cash or Online Money Accepted
             </div>
         </div>
@@ -535,16 +782,16 @@
                     <div class="flex items-center space-x-2">
                         <div class="relative w-36 flex-shrink-0">
                             <select id="country-code-select" onchange="onCountryCodeChange()" class="w-full bg-cyber-card border border-cyber-border rounded-xl px-2.5 py-2.5 text-xs font-mono font-bold text-cyber-cyan focus:outline-none focus:border-cyber-cyan transition-colors">
-                                <option value="+91" data-digits="10">🇮🇳 +91 (India)</option>
-                                <option value="+1" data-digits="10">🇺🇸 +1 (USA/Canada)</option>
-                                <option value="+44" data-digits="10">🇬🇧 +44 (UK)</option>
-                                <option value="+61" data-digits="9">🇦🇺 +61 (Australia)</option>
-                                <option value="+81" data-digits="10">🇯🇵 +81 (Japan)</option>
-                                <option value="+49" data-digits="11">🇩🇪 +49 (Germany)</option>
-                                <option value="+33" data-digits="9">🇫🇷 +33 (France)</option>
-                                <option value="+86" data-digits="11">🇨🇳 +86 (China)</option>
-                                <option value="+971" data-digits="9">🇦🇪 +971 (UAE)</option>
-                                <option value="+966" data-digits="9">🇸🇦 +966 (Saudi Arabia)</option>
+                                <option value="+91" data-digits="10">+91 (India)</option>
+                                <option value="+1" data-digits="10">+1 (USA/Canada)</option>
+                                <option value="+44" data-digits="10">+44 (UK)</option>
+                                <option value="+61" data-digits="9">+61 (Australia)</option>
+                                <option value="+81" data-digits="10">+81 (Japan)</option>
+                                <option value="+49" data-digits="11">+49 (Germany)</option>
+                                <option value="+33" data-digits="9">+33 (France)</option>
+                                <option value="+86" data-digits="11">+86 (China)</option>
+                                <option value="+971" data-digits="9">+971 (UAE)</option>
+                                <option value="+966" data-digits="9">+966 (Saudi Arabia)</option>
                             </select>
                         </div>
                         <div class="relative flex-1">
@@ -710,11 +957,18 @@
         let myLocalOrderIds = JSON.parse(localStorage.getItem('ss_rc_my_permanent_orders') || '[]');
         let myLocalOrdersMap = JSON.parse(localStorage.getItem('ss_rc_my_orders_data') || '{}');
         let myNotifications = JSON.parse(localStorage.getItem('ss_rc_my_notifications') || '[]');
+        let savedReorderHistory = JSON.parse(localStorage.getItem('ss_rc_reorder_history') || '[]');
+        let activeTimelineOrderId = localStorage.getItem('ss_rc_active_timeline_id') || '';
+
         let selectedNotificationIndices = new Set();
         let activeModalTimerInterval = null;
         let activeNoticesCache = [];
         let selectedPaymentMode = 'cash'; // 'cash' or 'upi'
         let currentUpiOrderIdData = null;
+
+        // Rating & Code Capture Tracking
+        let currentViewingCodeOrderId = null;
+        let selectedRatingStars = 0;
 
         // FamPay IDs for 50/50 randomized selection
         const famPayIdsList = ['6290376102@fam', 'syamantakdey2012@fam'];
@@ -744,6 +998,363 @@
         const cachedCustomFees = localStorage.getItem('ss_rc_custom_fee_tiers');
         if (cachedCustomFees) { try { customFeeTiersArray = JSON.parse(cachedCustomFees); } catch (e) {} }
 
+        // ==========================================
+        // 1. INTERACTIVE ORDER STATUS TIMELINE LOGIC
+        // ==========================================
+        function computeOrderStage(order) {
+            if (!order) return 1;
+            const status = (order.status || '').toLowerCase();
+            if (order.redeemCode) return 4; // Ready
+            if (order.cashConfirmed || order.trustTimerStart || order.cashReceivedAt) {
+                return 3; // Payment Verified -> Generating Code active
+            }
+            if (status.includes('accept') || status.includes('approv')) {
+                return 2; // Accepted, awaiting/verifying payment
+            }
+            return 1; // Order Placed
+        }
+
+        window.updateOrderTimelineUI = function(order) {
+            const banner = document.getElementById('live-order-timeline-banner');
+            if (!banner) return;
+
+            if (!order || !order.orderId) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            const rawStatus = (order.status || '').toLowerCase();
+            if (rawStatus.includes('reject') || rawStatus.includes('declin') || rawStatus.includes('cancel')) {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            activeTimelineOrderId = order.orderId;
+            localStorage.setItem('ss_rc_active_timeline_id', activeTimelineOrderId);
+
+            banner.classList.remove('hidden');
+            document.getElementById('timeline-order-id').textContent = order.orderId;
+
+            const stage = computeOrderStage(order);
+            const fillEl = document.getElementById('timeline-progress-fill');
+            const descEl = document.getElementById('timeline-status-desc');
+            const viewCodeBtn = document.getElementById('timeline-open-notif-btn');
+
+            const fillWidths = { 1: '12%', 2: '45%', 3: '78%', 4: '100%' };
+            if (fillEl) fillEl.style.width = fillWidths[stage] || '12%';
+
+            const stageMessages = {
+                1: 'Order Placed: Waiting for admin acceptance & payment check.',
+                2: 'Payment Verification: Complete your payment to proceed.',
+                3: 'Generating Code: Payment verified! Preparing your redeem code.',
+                4: 'Ready: Redeem code delivered to your Notifications!'
+            };
+            if (descEl) descEl.textContent = stageMessages[stage];
+
+            if (viewCodeBtn) {
+                if (stage === 4) viewCodeBtn.classList.remove('hidden');
+                else viewCodeBtn.classList.add('hidden');
+            }
+
+            for (let i = 1; i <= 4; i++) {
+                const stageEl = document.getElementById(`timeline-stage-${i}`);
+                if (!stageEl) continue;
+                const circle = stageEl.querySelector('.stage-circle');
+                const label = stageEl.querySelector('.stage-label');
+
+                circle.classList.remove(
+                    'border-cyber-cyan', 'bg-cyber-cyan/20', 'text-cyber-cyan',
+                    'border-cyber-green', 'bg-cyber-green/20', 'text-cyber-green',
+                    'border-cyber-border', 'bg-cyber-bg', 'text-gray-400',
+                    'stage-node-active'
+                );
+                label.classList.remove('text-cyber-cyan', 'text-cyber-green', 'text-gray-400');
+
+                if (i < stage || (stage === 4 && i === 4)) {
+                    // Completed stage
+                    circle.classList.add('border-cyber-green', 'bg-cyber-green/20', 'text-cyber-green');
+                    label.classList.add('text-cyber-green');
+                } else if (i === stage) {
+                    // Current active stage
+                    circle.classList.add('border-cyber-cyan', 'bg-cyber-cyan/20', 'text-cyber-cyan', 'stage-node-active');
+                    label.classList.add('text-cyber-cyan');
+                } else {
+                    // Pending future stage
+                    circle.classList.add('border-cyber-border', 'bg-cyber-bg', 'text-gray-400');
+                    label.classList.add('text-gray-400');
+                }
+            }
+        };
+
+        window.dismissOrderTimeline = function() {
+            activeTimelineOrderId = '';
+            localStorage.removeItem('ss_rc_active_timeline_id');
+            const banner = document.getElementById('live-order-timeline-banner');
+            if (banner) banner.classList.add('hidden');
+        };
+
+        // ==========================================
+        // 2. QUICK REORDER & HISTORY MANAGEMENT
+        // ==========================================
+        function saveOrderToReorderHistory(orderData) {
+            const entry = {
+                historyId: `HIST_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                pinned: false,
+                createdAt: orderData.createdAt || Date.now(),
+                customerName: orderData.customerName,
+                locality: orderData.locality,
+                profession: orderData.profession,
+                countryCode: orderData.countryCode || '+91',
+                whatsappNumber: orderData.whatsappNumber,
+                paymentMode: orderData.paymentMode || 'cash',
+                items: JSON.parse(JSON.stringify(orderData.items || [])),
+                rcBaseAmount: orderData.rcBaseAmount || 0,
+                total: orderData.total || 0
+            };
+
+            savedReorderHistory.unshift(entry);
+            localStorage.setItem('ss_rc_reorder_history', JSON.stringify(savedReorderHistory));
+            updateReorderCountBadge();
+        }
+
+        function updateReorderCountBadge() {
+            const badge = document.getElementById('nav-reorder-count');
+            if (badge) badge.textContent = savedReorderHistory.length;
+        }
+
+        window.renderReorderHistory = function() {
+            const container = document.getElementById('reorder-history-list');
+            if (!container) return;
+
+            if (savedReorderHistory.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 text-gray-500 text-xs font-mono">No past orders stored yet. Place an order to unlock 1-click reorder!</div>`;
+                return;
+            }
+
+            // Sort: Pinned items locked at top, then newest first
+            const sortedList = [...savedReorderHistory].sort((a, b) => {
+                if (a.pinned && !b.pinned) return -1;
+                if (!a.pinned && b.pinned) return 1;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
+
+            container.innerHTML = sortedList.map((entry) => {
+                const itemsSummary = (entry.items || []).map(it => it.name).join(', ') || `Redeem Code ₹${entry.rcBaseAmount}`;
+                const dateStr = new Date(entry.createdAt || Date.now()).toLocaleDateString();
+                const pinBtnClass = entry.pinned
+                    ? 'border-cyber-yellow bg-cyber-yellow/15 text-cyber-yellow'
+                    : 'border-cyber-border bg-cyber-card text-gray-400 hover:text-cyber-yellow hover:border-cyber-yellow/50';
+                const cardBorderClass = entry.pinned
+                    ? 'border-cyber-yellow/60 bg-cyber-yellow/5'
+                    : 'border-cyber-border bg-cyber-bg';
+
+                return `
+                    <div class="p-4 rounded-xl border ${cardBorderClass} space-y-3 transition-all">
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="space-y-1 flex-1">
+                                <div class="flex items-center space-x-2">
+                                    ${entry.pinned ? '<span class="px-1.5 py-0.5 rounded bg-cyber-yellow/20 text-cyber-yellow text-[9px] font-mono font-bold uppercase">Pinned</span>' : ''}
+                                    <span class="text-[10px] font-mono text-gray-400">${dateStr} • ${(entry.paymentMode || 'cash').toUpperCase()}</span>
+                                </div>
+                                <h4 class="text-xs font-bold text-white leading-snug">${itemsSummary}</h4>
+                                <p class="text-[11px] font-mono text-gray-400">${entry.customerName} • ${entry.countryCode} ${entry.whatsappNumber}</p>
+                            </div>
+                            <button onclick="togglePinReorder('${entry.historyId}')" title="${entry.pinned ? 'Unpin Order' : 'Pin to Top'}" class="p-2 rounded-lg border ${pinBtnClass} transition-all active:scale-95 flex items-center justify-center">
+                                <span class="css-icon-pin ${entry.pinned ? 'pinned' : ''}"></span>
+                            </button>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-cyber-border/70">
+                            <span class="text-xs font-mono font-extrabold text-cyber-cyan">Code Value: ₹${entry.rcBaseAmount}</span>
+                            <button onclick="triggerOneClickReorder('${entry.historyId}')" class="px-4 py-2 rounded-xl bg-gradient-to-r from-cyber-green to-emerald-500 text-gray-950 font-extrabold text-xs hover:opacity-90 active:scale-95 transition-all flex items-center space-x-1.5 shadow-md shadow-cyber-green/20">
+                                <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                                <span>Reorder</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.togglePinReorder = function(historyId) {
+            const idx = savedReorderHistory.findIndex(item => item.historyId === historyId);
+            if (idx === -1) return;
+            savedReorderHistory[idx].pinned = !savedReorderHistory[idx].pinned;
+            localStorage.setItem('ss_rc_reorder_history', JSON.stringify(savedReorderHistory));
+            renderReorderHistory();
+            showToast(savedReorderHistory[idx].pinned ? "Order pinned to top!" : "Order unpinned.");
+        };
+
+        window.deleteAllSavedReorders = function() {
+            if (savedReorderHistory.length === 0) {
+                showToast("Reorder history is already empty.");
+                return;
+            }
+            if (!confirm("Delete all saved past orders from your Reorder history?")) return;
+            savedReorderHistory = [];
+            localStorage.setItem('ss_rc_reorder_history', JSON.stringify(savedReorderHistory));
+            updateReorderCountBadge();
+            renderReorderHistory();
+            showToast("Reorder history cleared.");
+        };
+
+        window.triggerOneClickReorder = function(historyId) {
+            const entry = savedReorderHistory.find(item => item.historyId === historyId);
+            if (!entry) return;
+
+            // Recalculate current fees/discounts dynamically for the stored items
+            const subtotal = entry.rcBaseAmount || (entry.items || []).reduce((s, it) => s + (it.rcBaseAmount || it.price), 0);
+            const firstTime = isFirstTimeUser();
+            const combinedFee = firstTime ? 0 : calculateExtraFeeForAmount(subtotal);
+            const total = subtotal + combinedFee;
+            const orderId = generateUniqueOrderId();
+            lastGeneratedCode = orderId;
+
+            const newOrderData = {
+                orderId,
+                customerName: entry.customerName,
+                locality: entry.locality,
+                profession: entry.profession,
+                countryCode: entry.countryCode || '+91',
+                whatsappNumber: entry.whatsappNumber,
+                whatsappFull: `${entry.countryCode || '+91'} ${entry.whatsappNumber}`,
+                items: JSON.parse(JSON.stringify(entry.items || [])),
+                total,
+                rcBaseAmount: subtotal,
+                paymentMode: entry.paymentMode || 'cash',
+                status: 'Pending',
+                createdAt: Date.now(),
+                date: new Date().toLocaleDateString()
+            };
+
+            switchPage('home');
+
+            if (newOrderData.paymentMode === 'upi') {
+                currentUpiOrderIdData = newOrderData;
+                openUpiQrModal(newOrderData);
+                return;
+            }
+
+            finalizeOrderSubmission(newOrderData, false);
+            showToast(`Reordered (${orderId}) in 1 click!`);
+        };
+
+        // ==========================================
+        // 3. REDEEM CODE CAPTURE & INSTANT RATING POPUP
+        // ==========================================
+        let codeHoldTimer = null;
+        window.startRedeemCodeHold = function(event, codeText, orderId, element) {
+            event.stopPropagation();
+            if (element) element.classList.add('holding-id');
+            clearTimeout(codeHoldTimer);
+            codeHoldTimer = setTimeout(() => {
+                if (element) element.classList.remove('holding-id');
+                handleRedeemCodeCaptured(codeText, orderId, '1.5s Hold Auto-Copy');
+            }, 1500);
+        };
+
+        window.cancelRedeemCodeHold = function(event, element) {
+            if (event) event.stopPropagation();
+            clearTimeout(codeHoldTimer);
+            if (element) element.classList.remove('holding-id');
+        };
+
+        window.handleRedeemCodeCaptured = function(codeText, orderId, methodLabel) {
+            if (codeText) {
+                copyTextDirectly(codeText);
+                showToast(`Redeem code copied (${methodLabel})!`);
+            }
+            const targetOrderId = orderId || currentViewingCodeOrderId || 'GENERAL';
+            const ratedKey = `ss_rc_rated_order_${targetOrderId}`;
+            if (!localStorage.getItem(ratedKey)) {
+                setTimeout(() => {
+                    openRatingModal(targetOrderId);
+                }, 400);
+            }
+        };
+
+        // Screenshot key detection while viewing a redeem code notification
+        window.addEventListener('keyup', (e) => {
+            const modal = document.getElementById('notif-letter-modal');
+            const isModalOpen = modal && !modal.classList.contains('hidden');
+            if (isModalOpen && currentViewingCodeOrderId && (e.key === 'PrintScreen' || e.code === 'PrintScreen')) {
+                handleRedeemCodeCaptured(null, currentViewingCodeOrderId, 'Screenshot Detected');
+            }
+        });
+
+        window.openRatingModal = function(orderId) {
+            currentViewingCodeOrderId = orderId;
+            selectedRatingStars = 0;
+            document.getElementById('rating-comment-input').value = '';
+            document.getElementById('rating-label-text').textContent = 'Select a star rating';
+            document.querySelectorAll('#rating-stars-container .css-star').forEach(s => s.classList.remove('active'));
+            document.getElementById('rating-feedback-modal').classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
+        };
+
+        window.closeRatingModal = function() {
+            if (currentViewingCodeOrderId) {
+                localStorage.setItem(`ss_rc_rated_order_${currentViewingCodeOrderId}`, 'skipped');
+            }
+            document.getElementById('rating-feedback-modal').classList.add('hidden');
+        };
+
+        window.selectRatingStar = function(starCount) {
+            selectedRatingStars = starCount;
+            const labels = {
+                1: '1 / 5 — Needs Improvement',
+                2: '2 / 5 — Fair Experience',
+                3: '3 / 5 — Good Service',
+                4: '4 / 5 — Great & Fast!',
+                5: '5 / 5 — Outstanding! Trusted S S | R C'
+            };
+            document.getElementById('rating-label-text').textContent = labels[starCount] || `${starCount} / 5 Stars`;
+            document.querySelectorAll('#rating-stars-container .css-star').forEach(starEl => {
+                const val = parseInt(starEl.getAttribute('data-star'), 10);
+                if (val <= starCount) starEl.classList.add('active');
+                else starEl.classList.remove('active');
+            });
+        };
+
+        window.submitCustomerFeedback = async function() {
+            if (selectedRatingStars === 0) {
+                showToast("Please select at least 1 star before submitting.");
+                return;
+            }
+            const commentText = document.getElementById('rating-comment-input').value.trim();
+            const orderId = currentViewingCodeOrderId || 'UNKNOWN';
+            const orderObj = myLocalOrdersMap[orderId] || {};
+            const savedProfile = JSON.parse(localStorage.getItem('ss_rc_saved_customer_profile') || '{}');
+
+            const feedbackPayload = {
+                feedbackId: `FB-${Date.now().toString(36).toUpperCase()}`,
+                orderId: orderId,
+                customerName: orderObj.customerName || savedProfile.customerName || 'Customer',
+                whatsappFull: orderObj.whatsappFull || `${savedProfile.countryCode || '+91'} ${savedProfile.whatsappNumber || ''}`.trim(),
+                rating: selectedRatingStars,
+                comment: commentText || '(No written comment provided)',
+                readByAdmin: false,
+                createdAt: Date.now(),
+                date: new Date().toLocaleDateString()
+            };
+
+            localStorage.setItem(`ss_rc_rated_order_${orderId}`, 'submitted');
+            document.getElementById('rating-feedback-modal').classList.add('hidden');
+            showToast("Thank you! Your rating & message were sent to Admin.");
+
+            if (auth && db) {
+                try {
+                    await signInAnonymously(auth);
+                    await addDoc(collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolFeedback'), feedbackPayload);
+                } catch (err) {}
+            }
+        };
+
+        // ==========================================
+        // EXISTING CORE LOGIC & FIREBASE SYNC
+        // ==========================================
         window.setPaymentMode = function(mode) {
             selectedPaymentMode = mode;
             const cashLbl = document.getElementById('pay-mode-cash-label');
@@ -927,6 +1538,9 @@
                         if (myLocalOrderIds.includes(data.orderId)) {
                             myLocalOrdersMap[data.orderId] = { ...(myLocalOrdersMap[data.orderId] || {}), ...data };
                             handleOrderStateChanges(data);
+                            if (data.orderId === activeTimelineOrderId) {
+                                updateOrderTimelineUI(myLocalOrdersMap[data.orderId]);
+                            }
                         }
                     });
                     localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
@@ -948,6 +1562,7 @@
                     id: `accepted_${orderId}_${Date.now()}`,
                     title: `Request Accepted - ${orderId}`,
                     message: `Your request has been accepted! Please bring the payment.`,
+                    orderId: orderId,
                     seen: false,
                     createdAt: Date.now()
                 });
@@ -960,6 +1575,7 @@
                     id: `rejected_${orderId}_${Date.now()}`,
                     title: `Order Cancelled/Rejected - ${orderId}`,
                     message: `Your order request (${orderId}) was cancelled or not received after verification check.`,
+                    orderId: orderId,
                     seen: false,
                     createdAt: Date.now()
                 });
@@ -974,6 +1590,7 @@
                     id: `cash_${orderId}_${Date.now()}`,
                     title: `Payment Received Confirmed - ${orderId}`,
                     message: `Your payment has been safely verified and received! We deeply appreciate your trust and support. Your redeem code is guaranteed to arrive within this 24-hour window.`,
+                    orderId: orderId,
                     seen: false,
                     createdAt: Date.now(),
                     trustStart: effectiveStart
@@ -991,6 +1608,7 @@
                     id: `code_${orderId}_${Date.now()}`,
                     title: `Redeem Code(s) Dispatched - ${orderId}`,
                     message: `Your redeem code(s) are ready and verified. Thank you for your patience!`,
+                    orderId: orderId,
                     code: order.redeemCode,
                     seen: false,
                     createdAt: Date.now()
@@ -1169,15 +1787,28 @@
             }
 
             if (notif.code) {
+                const extractedOrderId = notif.orderId || (notif.title.match(/REQ-[A-Z0-9]+/) || ['GENERAL'])[0];
+                currentViewingCodeOrderId = extractedOrderId;
                 const codesArr = notif.code.split(',').map(c => c.trim()).filter(Boolean);
                 codeBox.classList.remove('hidden');
                 codeBox.innerHTML = `
-                    <div class="p-3 rounded-xl bg-cyber-bg border border-cyber-cyan space-y-2">
-                        <span class="text-[10px] font-mono text-gray-400 uppercase block">Your Verified Redeem Code(s):</span>
+                    <div class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-cyan space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-mono text-gray-400 uppercase">Verified Redeem Code(s):</span>
+                            <span class="text-[9px] font-mono text-cyber-yellow">Click Copy or Hold 1.5s</span>
+                        </div>
                         ${codesArr.map((singleCode, cIdx) => `
-                            <div class="flex items-center justify-between pt-1 ${cIdx > 0 ? 'border-t border-cyber-border/70' : ''}">
-                                <span class="font-mono font-black text-cyber-cyan text-sm select-all">${singleCode}</span>
-                                <button onclick="copyTextDirectly('${singleCode}'); showToast('Redeem code #${cIdx+1} copied!');" class="px-3 py-1.5 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-xs active:scale-95 transition-all flex items-center space-x-1">
+                            <div class="flex items-center justify-between pt-1.5 ${cIdx > 0 ? 'border-t border-cyber-border/70' : ''}">
+                                <span
+                                    onmousedown="startRedeemCodeHold(event, '${singleCode}', '${extractedOrderId}', this)"
+                                    onmouseup="cancelRedeemCodeHold(event, this)"
+                                    onmouseleave="cancelRedeemCodeHold(event, this)"
+                                    ontouchstart="startRedeemCodeHold(event, '${singleCode}', '${extractedOrderId}', this)"
+                                    ontouchend="cancelRedeemCodeHold(event, this)"
+                                    ontouchcancel="cancelRedeemCodeHold(event, this)"
+                                    class="font-mono font-black text-cyber-cyan text-sm cursor-pointer px-1.5 py-1 rounded hover:bg-cyber-cyan/10 transition-all"
+                                >${singleCode}</span>
+                                <button onclick="handleRedeemCodeCaptured('${singleCode}', '${extractedOrderId}', 'Copy Button');" class="px-3 py-1.5 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-xs active:scale-95 transition-all flex items-center space-x-1">
                                     <i data-lucide="copy" class="w-3.5 h-3.5"></i>
                                     <span>Copy</span>
                                 </button>
@@ -1186,6 +1817,7 @@
                     </div>
                 `;
             } else {
+                currentViewingCodeOrderId = null;
                 codeBox.classList.add('hidden');
                 codeBox.innerHTML = '';
             }
@@ -1196,6 +1828,7 @@
         };
 
         window.closeNotifLetterModal = function() {
+            currentViewingCodeOrderId = null;
             document.getElementById('notif-letter-modal').classList.add('hidden');
             if (activeModalTimerInterval) clearInterval(activeModalTimerInterval);
         };
@@ -1536,12 +2169,16 @@
         window.switchPage = function(page) {
             closeNavMenu();
             document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-reorder').classList.add('hidden');
             document.getElementById('view-track').classList.add('hidden');
             document.getElementById('view-notifications').classList.add('hidden');
             document.getElementById('view-info').classList.add('hidden');
 
             if (page === 'home') {
                 document.getElementById('view-home').classList.remove('hidden');
+            } else if (page === 'reorder') {
+                document.getElementById('view-reorder').classList.remove('hidden');
+                renderReorderHistory();
             } else if (page === 'track') {
                 document.getElementById('view-track').classList.remove('hidden');
                 document.getElementById('track-order-input').focus();
@@ -1559,17 +2196,44 @@
             const titleEl = document.getElementById('info-page-title');
             const bodyEl = document.getElementById('info-page-body');
             const contentMap = {
+                faq: {
+                    title: 'Frequently Asked Questions (FAQ)',
+                    html: `
+                        <div class="space-y-3">
+                            <div class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border space-y-1">
+                                <p class="font-bold text-cyber-cyan">1. Where do I receive my redeem code?</p>
+                                <p class="text-gray-300">All redeem codes are delivered exclusively inside your <strong class="text-white">Notifications</strong> tab in the top-left menu once payment is verified.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border space-y-1">
+                                <p class="font-bold text-cyber-cyan">2. How long does code delivery take after payment?</p>
+                                <p class="text-gray-300">Once your Cash or UPI payment is verified, the <strong class="text-cyber-green">24-Hour Trust Timer</strong> starts, guaranteeing delivery within that window (usually much sooner).</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border space-y-1">
+                                <p class="font-bold text-cyber-cyan">3. What payment methods are accepted?</p>
+                                <p class="text-gray-300">Both <strong class="text-white">Cash</strong> (in person) and <strong class="text-white">UPI</strong> (instant QR scan) are accepted. Your very first order has ₹0 extra service fee.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border space-y-1">
+                                <p class="font-bold text-cyber-cyan">4. How does Quick Reorder work?</p>
+                                <p class="text-gray-300">Open <strong class="text-white">Menu → Reorder</strong> to view your past orders. You can pin your favorite packages to the top and reorder them with one click without re-typing your details.</p>
+                            </div>
+                            <div class="p-3.5 rounded-xl bg-cyber-bg border border-cyber-border space-y-1">
+                                <p class="font-bold text-cyber-cyan">5. How do I copy my Customer ID or Redeem Code?</p>
+                                <p class="text-gray-300">Click the <strong class="text-white">Copy</strong> button or press and hold on the ID/code for <strong class="text-white">1.5 seconds</strong> to copy it automatically.</p>
+                            </div>
+                        </div>
+                    `
+                },
                 about: {
                     title: 'About S S | R C',
                     html: `<p><strong class="text-white">S S | R C Hub</strong> is built exclusively to request redeem codes securely (cash as well as online money).</p>`
                 },
                 terms: {
                     title: 'Terms & Conditions',
-                    html: `<p>• All orders are supported with <strong class="text-cyber-cyan">cash as well as online money</strong>.</p><p>• Redeem codes are delivered after verification.</p>`
+                    html: `<p>• All orders are supported with <strong class="text-cyber-cyan">cash as well as online money</strong>.</p><p>• Redeem codes are delivered after verification inside the Notifications section.</p>`
                 },
                 privacy: {
                     title: 'Privacy Policy',
-                    html: `<p>We only collect your Full Name, Locality, Profession, and WhatsApp for verification.</p>`
+                    html: `<p>We only collect your Full Name, Locality, Profession, and WhatsApp for verification and order tracking.</p>`
                 },
                 rules: {
                     title: 'Offline Rules',
@@ -1626,7 +2290,7 @@
                 badgeText = 'ACCEPTED';
                 badgeClasses = 'bg-cyber-green/15 text-cyber-green border-cyber-green/40';
                 statusNote = data.redeemCode
-                    ? 'Order completed! Your redeem code(s) have been issued below.'
+                    ? 'Order completed! Open Notifications in the top-left menu to view and copy your redeem code(s).'
                     : (data.cashConfirmed || data.trustTimerStart || data.cashReceivedAt)
                     ? 'Payment received & confirmed! Trust timer is active for redeem code delivery.'
                     : 'Order accepted! Please bring payment.';
@@ -1651,21 +2315,15 @@
                 `;
             }
 
+            // Exclusive Redeem Code Access: Direct users to Notification Center
             let redeemHtml = '';
             if (data.redeemCode) {
-                const codesArr = data.redeemCode.split(',').map(c => c.trim()).filter(Boolean);
                 redeemHtml = `
-                    <div class="mt-2 p-3 rounded-xl bg-cyber-bg border border-cyber-green/50 space-y-2">
-                        <span class="text-[10px] font-mono text-cyber-green uppercase font-bold block">Verified Redeem Code(s):</span>
-                        ${codesArr.map((singleCode, cIdx) => `
-                            <div class="flex items-center justify-between pt-1 ${cIdx > 0 ? 'border-t border-cyber-border/70' : ''}">
-                                <span class="font-mono font-black text-cyber-cyan text-xs select-all">${singleCode}</span>
-                                <button onclick="copyTextDirectly('${singleCode}'); showToast('Redeem code copied!');" class="px-2.5 py-1 rounded-lg bg-cyber-cyan text-gray-950 font-extrabold text-[11px] active:scale-95 transition-all flex items-center space-x-1">
-                                    <i data-lucide="copy" class="w-3 h-3"></i>
-                                    <span>Copy</span>
-                                </button>
-                            </div>
-                        `).join('')}
+                    <div class="mt-2 p-3 rounded-xl bg-cyber-bg border border-cyber-green/50 flex items-center justify-between">
+                        <span class="text-[11px] font-mono text-cyber-green font-bold">Redeem Code Ready in Notifications</span>
+                        <button onclick="switchPage('notifications')" class="px-3 py-1.5 rounded-lg bg-cyber-green text-gray-950 font-extrabold text-[11px] active:scale-95 transition-all">
+                            Open Notifications
+                        </button>
                     </div>
                 `;
             }
@@ -1759,7 +2417,6 @@
             const feeEl = document.getElementById('extra-fee');
             const totalEl = document.getElementById('calculated-total');
 
-            // If empty, 0, or single digit 0-9 -> show 0 and invalid message
             if (rawVal === '' || (rawVal.length === 1 && rawVal >= '0' && rawVal <= '9')) {
                 baseEl.textContent = '₹0';
                 feeEl.textContent = '+ ₹0';
@@ -1832,7 +2489,6 @@
 
         window.addPresetToCart = function(name, explicitRcBase) {
             const rcBase = explicitRcBase;
-            const rawTierFee = calculateRawTierFeeForAmount(rcBase);
             const discountedFee = calculateExtraFeeForAmount(rcBase);
             const firstTime = isFirstTimeUser();
             const fee = firstTime ? 0 : discountedFee;
@@ -1881,7 +2537,6 @@
                 return;
             }
 
-            // Cart-Wide Fee Calculation across all items combined
             const subtotal = calculateCartSubtotal();
             const firstTime = isFirstTimeUser();
             const combinedFee = firstTime ? 0 : calculateExtraFeeForAmount(subtotal);
@@ -1946,11 +2601,10 @@
                 return;
             }
 
-            finalizeOrderSubmission(orderData);
+            finalizeOrderSubmission(orderData, true);
         };
 
         window.openUpiQrModal = function(order) {
-            // 50/50 randomized selection between the two FamPay IDs
             const randomUpiId = famPayIdsList[Math.floor(Math.random() * famPayIdsList.length)];
             order.upiIdUsed = randomUpiId;
 
@@ -1966,7 +2620,7 @@
         window.submitUpiPaymentDone = function() {
             if (!currentUpiOrderIdData) return;
             document.getElementById('upi-qr-modal').classList.add('hidden');
-            finalizeOrderSubmission(currentUpiOrderIdData);
+            finalizeOrderSubmission(currentUpiOrderIdData, true);
             currentUpiOrderIdData = null;
         };
 
@@ -1984,13 +2638,20 @@
             showToast("UPI Payment Cancelled.");
         };
 
-        function finalizeOrderSubmission(orderData) {
+        function finalizeOrderSubmission(orderData, saveToReorder = true) {
             if (!myLocalOrderIds.includes(orderData.orderId)) {
                 myLocalOrderIds.unshift(orderData.orderId);
                 localStorage.setItem('ss_rc_my_permanent_orders', JSON.stringify(myLocalOrderIds));
             }
             myLocalOrdersMap[orderData.orderId] = orderData;
             localStorage.setItem('ss_rc_my_orders_data', JSON.stringify(myLocalOrdersMap));
+
+            if (saveToReorder) {
+                saveOrderToReorderHistory(orderData);
+            }
+
+            // Immediately render live Order Status Timeline on index.html
+            updateOrderTimelineUI(orderData);
 
             renderPopularPackages();
             handleAmountInput();
@@ -2037,6 +2698,12 @@
             subscribeToDynamicConfig();
             subscribeToLiveUpdates();
             updateNotificationBadges();
+            updateReorderCountBadge();
+
+            // Restore active Order Status Timeline if available
+            if (activeTimelineOrderId && myLocalOrdersMap[activeTimelineOrderId]) {
+                updateOrderTimelineUI(myLocalOrdersMap[activeTimelineOrderId]);
+            }
 
             for (let id of myLocalOrderIds) {
                 const startTime = localStorage.getItem(`ss_rc_trust_start_${id}`);
