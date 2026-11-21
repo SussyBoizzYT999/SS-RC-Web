@@ -179,6 +179,148 @@
             transform: scale(1.15);
         }
 
+        /* Custom 5-Fingered Waving Hand Icon (HTML/CSS Only, Non-Stop Tilting) */
+        @keyframes handWaveInfinite {
+            0% { transform: rotate(0deg); }
+            15% { transform: rotate(22deg); }
+            30% { transform: rotate(-16deg); }
+            45% { transform: rotate(22deg); }
+            60% { transform: rotate(-12deg); }
+            75% { transform: rotate(16deg); }
+            100% { transform: rotate(0deg); }
+        }
+        .css-waving-hand {
+            position: relative;
+            display: inline-block;
+            width: 22px;
+            height: 24px;
+            color: #00f0ff;
+            transform-origin: 65% 88%;
+            animation: handWaveInfinite 1.4s ease-in-out infinite;
+            flex-shrink: 0;
+        }
+        .css-waving-hand .hand-palm {
+            position: absolute;
+            bottom: 1px;
+            left: 5px;
+            width: 12px;
+            height: 11px;
+            background-color: currentColor;
+            border-radius: 3px 3px 6px 6px;
+        }
+        .css-waving-hand .finger {
+            position: absolute;
+            background-color: currentColor;
+            border-radius: 999px;
+        }
+        /* Finger 1: Thumb */
+        .css-waving-hand .f-thumb {
+            bottom: 4px;
+            left: 1px;
+            width: 3.5px;
+            height: 8px;
+            transform: rotate(-38deg);
+            transform-origin: bottom center;
+        }
+        /* Finger 2: Index */
+        .css-waving-hand .f-index {
+            bottom: 10px;
+            left: 5px;
+            width: 2.5px;
+            height: 10px;
+            transform: rotate(-8deg);
+            transform-origin: bottom center;
+        }
+        /* Finger 3: Middle */
+        .css-waving-hand .f-middle {
+            bottom: 10px;
+            left: 8.2px;
+            width: 2.5px;
+            height: 12px;
+        }
+        /* Finger 4: Ring */
+        .css-waving-hand .f-ring {
+            bottom: 10px;
+            left: 11.4px;
+            width: 2.5px;
+            height: 10.5px;
+            transform: rotate(6deg);
+            transform-origin: bottom center;
+        }
+        /* Finger 5: Pinky */
+        .css-waving-hand .f-pinky {
+            bottom: 9px;
+            left: 14.4px;
+            width: 2.3px;
+            height: 8px;
+            transform: rotate(14deg);
+            transform-origin: bottom center;
+        }
+
+        /* ==========================================
+           FIRST-TIME USER AUTO NAVIGATION TOUR STYLES
+           ========================================== */
+        @keyframes tourSpotlightPulse {
+            0%, 100% {
+                border-color: #00f0ff;
+                box-shadow: 0 0 0 9999px rgba(5, 7, 12, 0.84), 0 0 22px rgba(0, 240, 255, 0.65), inset 0 0 10px rgba(0, 240, 255, 0.25);
+            }
+            50% {
+                border-color: #ff007f;
+                box-shadow: 0 0 0 9999px rgba(5, 7, 12, 0.84), 0 0 28px rgba(255, 0, 127, 0.75), inset 0 0 12px rgba(255, 0, 127, 0.25);
+            }
+        }
+        .tour-spotlight-box {
+            position: fixed;
+            z-index: 62;
+            border: 2.5px solid #00f0ff;
+            border-radius: 14px;
+            pointer-events: none;
+            transition: top 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                        left 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                        width 0.48s cubic-bezier(0.22, 1, 0.36, 1),
+                        height 0.48s cubic-bezier(0.22, 1, 0.36, 1);
+            animation: tourSpotlightPulse 2s infinite ease-in-out;
+        }
+
+        /* Pure HTML/CSS Animated Directional Arrow (No Emojis) */
+        @keyframes tourArrowBounceUp {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+        }
+        @keyframes tourArrowBounceDown {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(8px); }
+        }
+        .tour-arrow-up {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 11px solid transparent;
+            border-right: 11px solid transparent;
+            border-bottom: 15px solid #00f0ff;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.8));
+            animation: tourArrowBounceUp 0.9s infinite ease-in-out;
+        }
+        .tour-arrow-down {
+            display: inline-block;
+            width: 0;
+            height: 0;
+            border-left: 11px solid transparent;
+            border-right: 11px solid transparent;
+            border-top: 15px solid #00f0ff;
+            filter: drop-shadow(0 0 8px rgba(0, 240, 255, 0.8));
+            animation: tourArrowBounceDown 0.9s infinite ease-in-out;
+        }
+
+        @keyframes tourCardEntrance {
+            0% { opacity: 0; transform: translateY(14px) scale(0.96); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .tour-card-animate {
+            animation: tourCardEntrance 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -201,7 +343,7 @@
     <header class="sticky top-0 z-40 backdrop-blur-md bg-cyber-bg/90 border-b border-cyber-border px-4 py-3">
         <div class="max-w-md mx-auto flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="flex flex-col items-center">
+                <div id="tour-target-menu" class="flex flex-col items-center rounded-xl p-0.5">
                     <div class="relative">
                         <button onclick="openNavMenu()" aria-label="Open Navigation Menu" class="p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-200 hover:text-cyber-cyan hover:border-cyber-cyan transition-all active:scale-95 flex items-center justify-center">
                             <i data-lucide="menu" class="w-5 h-5"></i>
@@ -223,11 +365,11 @@
 
             <div class="flex items-center space-x-2">
                 <!-- Check Service Fees Button -->
-                <button onclick="openServiceFeesModal()" title="Check Service Fees" class="px-2.5 py-2 rounded-xl bg-cyber-card border border-cyber-border text-cyber-pink hover:bg-cyber-pink/15 transition-all active:scale-95 flex items-center space-x-1 font-mono text-xs font-bold">
+                <button id="tour-target-fees" onclick="openServiceFeesModal()" title="Check Service Fees" class="px-2.5 py-2 rounded-xl bg-cyber-card border border-cyber-border text-cyber-pink hover:bg-cyber-pink/15 transition-all active:scale-95 flex items-center space-x-1 font-mono text-xs font-bold">
                     <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5"></i>
                     <span class="hidden sm:inline">Fees</span>
                 </button>
-                <button onclick="openCartDrawer()" class="relative p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-cyan transition-all active:scale-95 flex items-center space-x-1.5">
+                <button id="tour-target-cart" onclick="openCartDrawer()" class="relative p-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-300 hover:text-cyber-cyan transition-all active:scale-95 flex items-center space-x-1.5">
                     <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                     <span id="cart-count" class="absolute -top-1.5 -right-1.5 bg-cyber-pink text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
                 </button>
@@ -245,8 +387,15 @@
                 <div class="absolute -right-10 -bottom-10 w-32 h-32 bg-cyber-cyan/10 rounded-full blur-2xl pointer-events-none"></div>
                 <div class="flex items-center justify-between mb-1">
                     <h2 class="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+                        <span class="css-waving-hand" aria-hidden="true">
+                            <span class="finger f-thumb"></span>
+                            <span class="finger f-index"></span>
+                            <span class="finger f-middle"></span>
+                            <span class="finger f-ring"></span>
+                            <span class="finger f-pinky"></span>
+                            <span class="hand-palm"></span>
+                        </span>
                         <span>Hello Guys!</span>
-                        <i data-lucide="sparkles" class="w-5 h-5 text-cyber-cyan"></i>
                     </h2>
                     <span id="first-time-badge" class="hidden px-2.5 py-0.5 rounded-full bg-cyber-green/15 border border-cyber-green/40 text-cyber-green text-[10px] font-mono font-bold uppercase flex items-center space-x-1">
                         <i data-lucide="gift" class="w-3 h-3"></i>
@@ -350,7 +499,7 @@
             </div>
 
             <!-- Custom Amount Entry Box -->
-            <div class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
+            <div id="tour-target-custom-amount" class="p-5 rounded-2xl bg-cyber-card border border-cyber-border space-y-4 shadow-lg">
                 <div class="flex items-center justify-between">
                     <span class="text-xs font-mono text-cyber-cyan uppercase tracking-wider font-semibold">Custom Amount Entry</span>
                     <span class="text-[10px] font-mono text-gray-400">Min: ₹10 | Max: ₹5,000</span>
@@ -393,7 +542,7 @@
             </div>
 
             <!-- Popular Packages -->
-            <div class="space-y-3">
+            <div id="tour-target-packages" class="space-y-3">
                 <h3 class="text-xs font-mono text-gray-400 uppercase tracking-widest px-1">Popular Packages</h3>
                 <div id="popular-packages-container" class="grid grid-cols-1 gap-3"></div>
             </div>
@@ -672,32 +821,32 @@
                 <div class="space-y-2">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-cyber-cyan px-2">Main Portal</p>
                     <div class="p-2 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-1">
-                        <button onclick="switchPage('home')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-cyan/15 hover:text-cyber-cyan transition-all">
+                        <button id="tour-nav-home" onclick="switchPage('home')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-cyan/15 hover:text-cyber-cyan transition-all">
                             <i data-lucide="home" class="w-4 h-4 text-cyber-cyan"></i>
                             <span>Home</span>
                         </button>
-                        <button onclick="switchPage('reorder')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-green/15 hover:text-cyber-green transition-all">
+                        <button id="tour-nav-reorder" onclick="switchPage('reorder')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-green/15 hover:text-cyber-green transition-all">
                             <div class="flex items-center space-x-3">
                                 <i data-lucide="repeat" class="w-4 h-4 text-cyber-green"></i>
                                 <span>Reorder</span>
                             </div>
                             <span id="nav-reorder-count" class="px-2 py-0.5 rounded-full bg-cyber-green/15 text-cyber-green text-[10px] font-mono">0</span>
                         </button>
-                        <button onclick="switchPage('notifications')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-purple/15 hover:text-cyber-purple transition-all">
+                        <button id="tour-nav-notifications" onclick="switchPage('notifications')" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-purple/15 hover:text-cyber-purple transition-all">
                             <div class="flex items-center space-x-3">
                                 <i data-lucide="bell" class="w-4 h-4 text-cyber-purple"></i>
                                 <span>Notifications</span>
                             </div>
                             <span id="nav-notif-badge" class="hidden px-2 py-0.5 rounded-full bg-cyber-pink text-white text-[10px] font-mono">0</span>
                         </button>
-                        <button onclick="switchPage('track')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-pink/15 hover:text-cyber-pink transition-all">
+                        <button id="tour-nav-track" onclick="switchPage('track')" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-left text-xs font-bold text-white hover:bg-cyber-pink/15 hover:text-cyber-pink transition-all">
                             <i data-lucide="package-search" class="w-4 h-4 text-cyber-pink"></i>
                             <span>Track Order</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="space-y-2">
+                <div id="tour-nav-notices" class="space-y-2 rounded-2xl p-1">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-cyber-yellow px-2">Active Notices</p>
                     <div id="drawer-notices-container" class="p-2.5 rounded-2xl bg-cyber-bg/80 border border-cyber-border space-y-2 max-h-32 overflow-y-auto">
                         <p class="text-[11px] text-gray-500 font-mono text-center py-2">No active notices.</p>
@@ -707,23 +856,31 @@
                 <div class="space-y-2 pt-2 border-t border-cyber-border/70">
                     <p class="text-[10px] font-mono uppercase tracking-widest text-gray-500 px-2">More & Policies</p>
                     <div class="p-2 rounded-2xl bg-cyber-bg/40 border border-cyber-border/60 space-y-1">
-                        <button onclick="openInfoPage('faq')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-cyber-cyan transition-all">
+                        <button id="tour-nav-guide" onclick="replayNavigationGuide()" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs font-bold text-cyber-cyan bg-cyber-cyan/10 hover:bg-cyber-cyan/20 transition-all">
+                            <i data-lucide="compass" class="w-3.5 h-3.5 text-cyber-cyan"></i>
+                            <span>Guide</span>
+                        </button>
+                        <button id="tour-nav-contacts" onclick="openInfoPage('contacts')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-cyber-green transition-all">
+                            <i data-lucide="phone-call" class="w-3.5 h-3.5 text-cyber-green"></i>
+                            <span>Contacts</span>
+                        </button>
+                        <button id="tour-nav-faq" onclick="openInfoPage('faq')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-cyber-cyan transition-all">
                             <i data-lucide="help-circle" class="w-3.5 h-3.5 text-cyber-cyan"></i>
                             <span>FAQ</span>
                         </button>
-                        <button onclick="openInfoPage('about')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                        <button id="tour-nav-about" onclick="openInfoPage('about')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
                             <i data-lucide="info" class="w-3.5 h-3.5 text-gray-400"></i>
                             <span>About S S | R C</span>
                         </button>
-                        <button onclick="openInfoPage('terms')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                        <button id="tour-nav-terms" onclick="openInfoPage('terms')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
                             <i data-lucide="file-text" class="w-3.5 h-3.5 text-gray-400"></i>
                             <span>Terms & Conditions</span>
                         </button>
-                        <button onclick="openInfoPage('privacy')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                        <button id="tour-nav-privacy" onclick="openInfoPage('privacy')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
                             <i data-lucide="shield-check" class="w-3.5 h-3.5 text-gray-400"></i>
                             <span>Privacy Policy</span>
                         </button>
-                        <button onclick="openInfoPage('rules')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
+                        <button id="tour-nav-rules" onclick="openInfoPage('rules')" class="w-full flex items-center space-x-3 px-3 py-2 rounded-xl text-left text-xs text-gray-300 hover:bg-white/5 hover:text-white transition-all">
                             <i data-lucide="book-open" class="w-3.5 h-3.5 text-gray-400"></i>
                             <span>Offline Rules</span>
                         </button>
@@ -891,6 +1048,86 @@
     <div id="toast" class="fixed bottom-4 left-4 right-4 max-w-sm mx-auto z-50 transform translate-y-20 opacity-0 transition-all duration-300 px-4 py-3 rounded-xl bg-cyber-card border border-cyber-cyan text-white text-xs flex items-center space-x-2 shadow-2xl">
         <i data-lucide="info" class="w-4 h-4 text-cyber-cyan flex-shrink-0"></i>
         <span id="toast-message" class="flex-1">Notification</span>
+    </div>
+
+    <!-- ==========================================
+         NEW USER WELCOME & AUTO NAVIGATION OVERLAY
+         ========================================== -->
+    <!-- 1. Welcome Splash Screen (Only for brand-new users) -->
+    <div id="new-user-welcome-overlay" class="fixed inset-0 z-[70] bg-cyber-bg/95 backdrop-blur-lg hidden flex items-center justify-center p-4">
+        <div class="bg-cyber-card border border-cyber-cyan/70 rounded-3xl w-full max-w-sm p-6 space-y-5 shadow-2xl tour-card-animate text-center relative overflow-hidden">
+            <div class="absolute -top-12 -right-12 w-32 h-32 bg-cyber-cyan/15 rounded-full blur-2xl pointer-events-none"></div>
+            <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-cyber-pink/15 rounded-full blur-2xl pointer-events-none"></div>
+
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyber-cyan to-blue-600 text-gray-950 mx-auto flex items-center justify-center shadow-lg shadow-cyber-cyan/30">
+                <i data-lucide="compass" class="w-7 h-7"></i>
+            </div>
+
+            <div class="space-y-2">
+                <span class="px-3 py-1 rounded-full bg-cyber-cyan/15 border border-cyber-cyan/40 text-cyber-cyan text-[10px] font-mono font-bold uppercase tracking-widest">
+                    First-Time Visitor Guide
+                </span>
+                <h2 class="text-xl font-black tracking-wide text-white pt-1">
+                    Welcome to <span class="text-cyber-cyan">S S</span> <span class="text-cyber-pink font-light">|</span> <span class="text-cyber-purple">R C</span>
+                </h2>
+                <p class="text-xs text-gray-300 leading-relaxed">
+                    Your trusted hub for fast, verified Redeem Codes using <strong class="text-white">Cash</strong> or <strong class="text-white">UPI</strong>. Let us take a quick interactive walkthrough so you know where every feature is located!
+                </p>
+            </div>
+
+            <div class="pt-1">
+                <button onclick="startAutoNavigationTour()" class="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-cyber-cyan via-blue-500 to-cyber-purple text-gray-950 font-black text-sm tracking-wide shadow-xl shadow-cyber-cyan/25 hover:opacity-95 active:scale-95 transition-all flex items-center justify-center space-x-2">
+                    <span>Enter & Start Guide</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Interactive Spotlight Cutout & Step-by-Step Guide Overlay -->
+    <div id="auto-nav-tour-layer" class="fixed inset-0 z-[65] hidden pointer-events-auto">
+        <!-- Rectangular / Square Spotlight Frame (Surrounding area blacked out via box-shadow, inner element stays completely normal & clear) -->
+        <div id="tour-spotlight-box" class="tour-spotlight-box"></div>
+
+        <!-- Animated Arrow + Tooltip Description Card -->
+        <div id="tour-tooltip-card" class="fixed z-[66] w-[90vw] max-w-xs bg-cyber-card border border-cyber-cyan/80 rounded-2xl p-4 shadow-2xl space-y-2 transition-all duration-300">
+            <div id="tour-arrow-top-holder" class="flex justify-center -mt-7 mb-1 hidden">
+                <span class="tour-arrow-up"></span>
+            </div>
+            <div class="flex items-center justify-between">
+                <span id="tour-step-badge" class="px-2 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan text-[10px] font-mono font-bold uppercase">Step 1 of 6</span>
+                <span class="text-[10px] font-mono text-gray-400">Interactive Guide</span>
+            </div>
+            <h3 id="tour-step-title" class="text-sm font-black text-white">Navigation Menu</h3>
+            <p id="tour-step-desc" class="text-xs text-gray-300 leading-relaxed">Tap here anytime to open Home, Quick Reorder, Notifications, Order Tracking, and Contacts.</p>
+            <div id="tour-arrow-bottom-holder" class="flex justify-center -mb-7 pt-1 hidden">
+                <span class="tour-arrow-down"></span>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Controls: Back (Bottom-Left) | Skip + Next (Bottom-Right) -->
+        <div class="fixed bottom-4 left-4 right-4 z-[68] max-w-md mx-auto flex items-center justify-between">
+            <!-- Bottom-Left: Back Button (Icon on left, Text 'Back' on right) -->
+            <button id="tour-btn-back" onclick="prevTourStep()" class="px-4 py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-200 hover:border-cyber-cyan hover:text-cyber-cyan text-xs font-bold shadow-xl active:scale-95 transition-all flex items-center space-x-1.5">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                <span>Back</span>
+            </button>
+
+            <!-- Bottom-Right: Skip Button first, then Next Button -->
+            <div class="flex items-center space-x-2">
+                <!-- Skip Button (Icon on left, Text 'Skip' on right) -->
+                <button id="tour-btn-skip" onclick="finishAutoNavigationTour()" class="px-3.5 py-2.5 rounded-xl bg-cyber-card border border-cyber-border text-gray-400 hover:text-white hover:border-gray-500 text-xs font-bold shadow-xl active:scale-95 transition-all flex items-center space-x-1.5">
+                    <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
+                    <span>Skip</span>
+                </button>
+
+                <!-- Next Button (Icon on left, Text 'Next' on right) -->
+                <button id="tour-btn-next" onclick="nextTourStep()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-cyber-cyan to-blue-500 text-gray-950 font-extrabold text-xs shadow-xl shadow-cyber-cyan/30 active:scale-95 transition-all flex items-center space-x-1.5">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    <span id="tour-btn-next-label">Next</span>
+                </button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase & App Script -->
@@ -2196,6 +2433,42 @@
             const titleEl = document.getElementById('info-page-title');
             const bodyEl = document.getElementById('info-page-body');
             const contentMap = {
+                contacts: {
+                    title: 'Contacts & Support',
+                    html: `
+                        <div class="space-y-3.5">
+                            <p class="text-gray-300 text-xs leading-relaxed">Need help? Reach out to the dedicated support team below based on the type of issue you are facing:</p>
+
+                            <!-- Support Number 1: Website Problems -->
+                            <div class="p-4 rounded-xl bg-cyber-bg border border-cyber-cyan/50 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan text-[10px] font-mono font-bold uppercase">Website Issues Only</span>
+                                    <i data-lucide="globe" class="w-4 h-4 text-cyber-cyan"></i>
+                                </div>
+                                <p class="text-sm font-mono font-extrabold text-white tracking-wide">+91 6290376102</p>
+                                <p class="text-[11px] text-gray-400 leading-relaxed">Contact this number <strong>only</strong> if you are facing technical bugs, loading glitches, or interface problems on the website.</p>
+                                <a href="https://wa.me/916290376102?text=${encodeURIComponent('Hello S S | R C Support, I am facing a problem with the website.')}" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyber-green to-emerald-500 text-gray-950 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-md shadow-cyber-green/20 hover:opacity-90 active:scale-95 transition-all">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>Chat on WhatsApp (Website Problem)</span>
+                                </a>
+                            </div>
+
+                            <!-- Support Number 2: Redeem Code Purchasing & Order Issues -->
+                            <div class="p-4 rounded-xl bg-cyber-bg border border-cyber-pink/50 space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2 py-0.5 rounded bg-cyber-pink/15 text-cyber-pink text-[10px] font-mono font-bold uppercase">Redeem Code & Orders</span>
+                                    <i data-lucide="ticket" class="w-4 h-4 text-cyber-pink"></i>
+                                </div>
+                                <p class="text-sm font-mono font-extrabold text-white tracking-wide">+91 82406 56966</p>
+                                <p class="text-[11px] text-gray-400 leading-relaxed">Contact this number regarding <strong>redeem code purchasing</strong>, payment verification, code delivery, or order inquiries.</p>
+                                <a href="https://wa.me/918240656966?text=${encodeURIComponent('Hello S S | R C Support, I need help regarding a redeem code purchase / order.')}" target="_blank" rel="noopener noreferrer" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-cyber-green to-emerald-500 text-gray-950 font-extrabold text-xs flex items-center justify-center space-x-2 shadow-md shadow-cyber-green/20 hover:opacity-90 active:scale-95 transition-all">
+                                    <i data-lucide="message-circle" class="w-4 h-4"></i>
+                                    <span>Chat on WhatsApp (Redeem Code Help)</span>
+                                </a>
+                            </div>
+                        </div>
+                    `
+                },
                 faq: {
                     title: 'Frequently Asked Questions (FAQ)',
                     html: `
@@ -2243,6 +2516,7 @@
             const selected = contentMap[type] || contentMap.about;
             titleEl.textContent = selected.title;
             bodyEl.innerHTML = selected.html;
+            if (window.lucide) lucide.createIcons();
             switchPage('info');
         };
 
@@ -2417,6 +2691,7 @@
             const feeEl = document.getElementById('extra-fee');
             const totalEl = document.getElementById('calculated-total');
 
+            // If empty, 0, or single digit 0-9 -> show 0 and invalid message
             if (rawVal === '' || (rawVal.length === 1 && rawVal >= '0' && rawVal <= '9')) {
                 baseEl.textContent = '₹0';
                 feeEl.textContent = '+ ₹0';
@@ -2537,6 +2812,7 @@
                 return;
             }
 
+            // Cart-Wide Fee Calculation across all items combined
             const subtotal = calculateCartSubtotal();
             const firstTime = isFirstTimeUser();
             const combinedFee = firstTime ? 0 : calculateExtraFeeForAmount(subtotal);
@@ -2605,6 +2881,7 @@
         };
 
         window.openUpiQrModal = function(order) {
+            // 50/50 randomized selection between the two FamPay IDs
             const randomUpiId = famPayIdsList[Math.floor(Math.random() * famPayIdsList.length)];
             order.upiIdUsed = randomUpiId;
 
@@ -2631,7 +2908,7 @@
                 if (auth && db) {
                     signInAnonymously(auth).then(() => {
                         addDoc(collection(db, 'artifacts', 'ss-rc-app', 'public', 'data', 'schoolOrders'), currentUpiOrderIdData).catch(err => {});
-                    });
+                    }).catch(err => {});
                 }
             }
             currentUpiOrderIdData = null;
@@ -2716,7 +2993,284 @@
                     break;
                 }
             }
+
+            // Check if this is an absolute new user who hasn't completed/skipped the Auto Navigation Tour
+            checkAndTriggerNewUserTour();
         }
+
+        // ==========================================
+        // 5. FIRST-TIME USER AUTO NAVIGATION SYSTEM
+        // ==========================================
+        const TOUR_STORAGE_KEY = 'ss_rc_auto_nav_tour_completed_v1';
+        let currentTourStepIdx = 0;
+
+        const autoNavTourSteps = [
+            {
+                targetId: 'tour-target-menu',
+                requiresDrawer: false,
+                title: '1. Main Navigation Menu',
+                desc: 'Tap this top-left Menu button anytime to open the full navigation drawer with Reorder, Notifications, Tracking, Notices, and Policies.'
+            },
+            {
+                targetId: 'tour-target-fees',
+                requiresDrawer: false,
+                title: '2. Service Fee Chart',
+                desc: 'Check exact extra service fee ranges for every amount tier here. Remember: your very first order has ₹0 extra service fee!'
+            },
+            {
+                targetId: 'tour-target-cart',
+                requiresDrawer: false,
+                title: '3. Shopping Cart & Checkout',
+                desc: 'View all added redeem codes, review combined fees, and complete checkout using either Cash or instant UPI QR code.'
+            },
+            {
+                targetId: 'tour-target-custom-amount',
+                requiresDrawer: false,
+                title: '4. Custom Amount Entry',
+                desc: 'Enter any custom redeem code value from ₹10 to ₹5,000 to see live extra fees and add it to your cart or pay cash immediately.'
+            },
+            {
+                targetId: 'tour-target-packages',
+                requiresDrawer: false,
+                title: '5. Popular Packages',
+                desc: 'Quickly pick from popular ready-made redeem code amounts with automatic discount and first-order fee calculations.'
+            },
+            {
+                targetId: 'tour-nav-home',
+                requiresDrawer: true,
+                title: '6. Menu: Home',
+                desc: 'Returns you to the main portal where you can enter custom amounts, browse packages, and check your live order timeline.'
+            },
+            {
+                targetId: 'tour-nav-reorder',
+                requiresDrawer: true,
+                title: '7. Menu: Reorder',
+                desc: 'View your past order history, pin your favorite redeem code packages to the top, and reorder them in just 1 click.'
+            },
+            {
+                targetId: 'tour-nav-notifications',
+                requiresDrawer: true,
+                title: '8. Menu: Notifications',
+                desc: 'Your official inbox! Verified redeem codes, payment confirmations, and 24-hour trust timer letters are delivered exclusively here.'
+            },
+            {
+                targetId: 'tour-nav-track',
+                requiresDrawer: true,
+                title: '9. Menu: Track Order',
+                desc: 'Search your Customer ID (REQ-...) or hold any saved ID for 1.5 seconds to copy and check real-time order approval status.'
+            },
+            {
+                targetId: 'tour-nav-notices',
+                requiresDrawer: true,
+                title: '10. Menu: Active Notices',
+                desc: 'Displays live official announcements, special offers, and important updates posted by the S S | R C admin team.'
+            },
+            {
+                targetId: 'tour-nav-contacts',
+                requiresDrawer: true,
+                title: '11. Policies: Contacts',
+                desc: 'Provides two dedicated support numbers with direct WhatsApp buttons—one for website issues and one for redeem code help.'
+            },
+            {
+                targetId: 'tour-nav-faq',
+                requiresDrawer: true,
+                title: '12. Policies: FAQ',
+                desc: 'Read clear answers to frequently asked questions about code delivery timing, payment modes, and copying codes.'
+            },
+            {
+                targetId: 'tour-nav-about',
+                requiresDrawer: true,
+                title: '13. Policies: About S S | R C',
+                desc: 'Learn more about the S S | R C Redeem Code Hub and how our secure request and verification system operates.'
+            },
+            {
+                targetId: 'tour-nav-terms',
+                requiresDrawer: true,
+                title: '14. Policies: Terms & Conditions',
+                desc: 'Review the official terms governing cash and online payments, verification steps, and redeem code delivery.'
+            },
+            {
+                targetId: 'tour-nav-privacy',
+                requiresDrawer: true,
+                title: '15. Policies: Privacy Policy',
+                desc: 'See how your basic contact details (Name, Locality, Profession, and WhatsApp) are protected and used solely for order tracking.'
+            },
+            {
+                targetId: 'tour-nav-rules',
+                requiresDrawer: true,
+                title: '16. Policies: Offline Rules',
+                desc: 'Step-by-step rules for completing offline cash payments and verifying your Customer ID safely.'
+            }
+        ];
+
+        function checkAndTriggerNewUserTour() {
+            const alreadyDone = localStorage.getItem(TOUR_STORAGE_KEY);
+            // Also verify no prior orders exist so only absolute new users see it once
+            if (!alreadyDone && myLocalOrderIds.length === 0) {
+                localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+                const welcomeOverlay = document.getElementById('new-user-welcome-overlay');
+                if (welcomeOverlay) {
+                    welcomeOverlay.classList.remove('hidden');
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
+        }
+
+        window.startAutoNavigationTour = function() {
+            localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+            const welcomeOverlay = document.getElementById('new-user-welcome-overlay');
+            if (welcomeOverlay) welcomeOverlay.classList.add('hidden');
+
+            switchPage('home');
+            currentTourStepIdx = 0;
+
+            const tourLayer = document.getElementById('auto-nav-tour-layer');
+            if (tourLayer) {
+                tourLayer.classList.remove('hidden');
+                renderCurrentTourStep();
+            }
+        };
+
+        // Triggered from the "Guide" button at the top of More & Policies (skips the Welcome screen)
+        window.replayNavigationGuide = function() {
+            closeNavMenu();
+            const welcomeOverlay = document.getElementById('new-user-welcome-overlay');
+            if (welcomeOverlay) welcomeOverlay.classList.add('hidden');
+
+            switchPage('home');
+            currentTourStepIdx = 0;
+
+            const tourLayer = document.getElementById('auto-nav-tour-layer');
+            if (tourLayer) {
+                tourLayer.classList.remove('hidden');
+                renderCurrentTourStep();
+            }
+        };
+
+        window.finishAutoNavigationTour = function() {
+            localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+            closeNavMenu();
+            const welcomeOverlay = document.getElementById('new-user-welcome-overlay');
+            const tourLayer = document.getElementById('auto-nav-tour-layer');
+            if (welcomeOverlay) welcomeOverlay.classList.add('hidden');
+            if (tourLayer) tourLayer.classList.add('hidden');
+            showToast("Tour completed! Enjoy S S | R C.");
+        };
+
+        window.nextTourStep = function() {
+            if (currentTourStepIdx < autoNavTourSteps.length - 1) {
+                currentTourStepIdx++;
+                renderCurrentTourStep();
+            } else {
+                finishAutoNavigationTour();
+            }
+        };
+
+        window.prevTourStep = function() {
+            if (currentTourStepIdx > 0) {
+                currentTourStepIdx--;
+                renderCurrentTourStep();
+            }
+        };
+
+        function positionTourSpotlight() {
+            const tourLayer = document.getElementById('auto-nav-tour-layer');
+            if (!tourLayer || tourLayer.classList.contains('hidden')) return;
+
+            const step = autoNavTourSteps[currentTourStepIdx];
+            const targetEl = document.getElementById(step.targetId);
+            const spotlightBox = document.getElementById('tour-spotlight-box');
+            const tooltipCard = document.getElementById('tour-tooltip-card');
+            const topArrowHolder = document.getElementById('tour-arrow-top-holder');
+            const bottomArrowHolder = document.getElementById('tour-arrow-bottom-holder');
+
+            if (!targetEl || !spotlightBox || !tooltipCard) return;
+
+            const rect = targetEl.getBoundingClientRect();
+            const pad = 6;
+
+            const boxTop = Math.max(4, rect.top - pad);
+            const boxLeft = Math.max(4, rect.left - pad);
+            const boxWidth = Math.min(window.innerWidth - 8, rect.width + pad * 2);
+            const boxHeight = rect.height + pad * 2;
+
+            spotlightBox.style.top = `${boxTop}px`;
+            spotlightBox.style.left = `${boxLeft}px`;
+            spotlightBox.style.width = `${boxWidth}px`;
+            spotlightBox.style.height = `${boxHeight}px`;
+
+            // Position tooltip card neatly below or above the spotlight box
+            const spaceBelow = window.innerHeight - (boxTop + boxHeight);
+            const cardWidth = Math.min(window.innerWidth * 0.9, 320);
+            let cardLeft = boxLeft + boxWidth / 2 - cardWidth / 2;
+            cardLeft = Math.max(12, Math.min(window.innerWidth - cardWidth - 12, cardLeft));
+
+            tooltipCard.style.left = `${cardLeft}px`;
+
+            if (spaceBelow > 210) {
+                // Place card below target with upward pointing arrow
+                tooltipCard.style.top = `${boxTop + boxHeight + 18}px`;
+                tooltipCard.style.bottom = 'auto';
+                topArrowHolder.classList.remove('hidden');
+                bottomArrowHolder.classList.add('hidden');
+            } else {
+                // Place card above target with downward pointing arrow
+                const bottomOffset = window.innerHeight - boxTop + 18;
+                tooltipCard.style.top = 'auto';
+                tooltipCard.style.bottom = `${Math.max(76, bottomOffset)}px`;
+                topArrowHolder.classList.add('hidden');
+                bottomArrowHolder.classList.remove('hidden');
+            }
+        }
+
+        function renderCurrentTourStep() {
+            const step = autoNavTourSteps[currentTourStepIdx];
+
+            // Open or close the Navigation Drawer automatically depending on the current step
+            if (step.requiresDrawer) {
+                openNavMenu();
+            } else {
+                closeNavMenu();
+            }
+
+            const targetEl = document.getElementById(step.targetId);
+
+            document.getElementById('tour-step-badge').textContent = `Step ${currentTourStepIdx + 1} of ${autoNavTourSteps.length}`;
+            document.getElementById('tour-step-title').textContent = step.title;
+            document.getElementById('tour-step-desc').textContent = step.desc;
+
+            const backBtn = document.getElementById('tour-btn-back');
+            const nextLabel = document.getElementById('tour-btn-next-label');
+
+            if (backBtn) {
+                if (currentTourStepIdx === 0) {
+                    backBtn.classList.add('opacity-40', 'pointer-events-none');
+                } else {
+                    backBtn.classList.remove('opacity-40', 'pointer-events-none');
+                }
+            }
+
+            if (nextLabel) {
+                nextLabel.textContent = currentTourStepIdx === autoNavTourSteps.length - 1 ? 'Done' : 'Next';
+            }
+
+            const tooltipCard = document.getElementById('tour-tooltip-card');
+            if (tooltipCard) {
+                tooltipCard.classList.remove('tour-card-animate');
+                void tooltipCard.offsetWidth;
+                tooltipCard.classList.add('tour-card-animate');
+            }
+
+            if (targetEl) {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(positionTourSpotlight, 280);
+            }
+
+            if (window.lucide) lucide.createIcons();
+        }
+
+        window.addEventListener('resize', positionTourSpotlight);
+        window.addEventListener('scroll', positionTourSpotlight, { passive: true });
 
         if (document.readyState === 'loading') {
             window.addEventListener('DOMContentLoaded', initApp);
